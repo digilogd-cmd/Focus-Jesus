@@ -104,3 +104,16 @@
 - 테스트 환경 문제(앱 결함 아님): 통합 테스트에서 paused 상태로 만든 뒤 프레임을 기다려 무한 대기 → paused 동안은 실시간 대기로 변경.
 - 결과: `flutter analyze` 무오류, 단위·위젯 **93개 통과**, 통합 2개 통과, 콘텐츠 검증 통과, 스크린샷 33장 갱신(`docs/screenshots/`).
 - 미측정: 긴 본문 스크롤 성능의 수치(프레임 시간). Xvfb 소프트웨어 렌더링 수치는 실기기 성능을 대표하지 않아 기록하지 않음.
+
+## Phase 6 — 최종 빌드 및 배포 준비 (부분 완료: 기기 구동 검증 미완료)
+
+- `scripts/verify.sh` 최종 실행 exit 0: 포맷·분석·테스트 93개·콘텐츠 검증·Release APK 빌드.
+- Release APK: 66,555,072 bytes, SHA-256 `a996645f76d26e1286dc0a4de71aa8a0e00d7f0f1f5b7e40c31e04564d4bc4ac`
+  (두 번 빌드해 동일 해시 확인). Android Debug 키 서명 — 출시용 아님. 권한: 알림·부팅 완료·진동(INTERNET 없음).
+- 기기 검증: 물리 기기 없음. 에뮬레이터(KVM 없음, 소프트웨어 에뮬레이션) 2종 시도 —
+  Android 16 Google APIs(부팅 31.9분), Android 16 ATD(부팅 16.5분) 모두 설치 단계에서 실패.
+  원인: Watchdog이 system_server를 약 4분마다 강제 종료(`Blocked in handler on main thread for 64s` → `GOODBYE`). 앱과 무관.
+  → **기기 구동 검증 미완료**로 기록. 절차는 `docs/FINAL_HANDOFF.md` 6장.
+- 환경 사건: 작업 중 클라우드 컨테이너가 한 번 재시작됨(커밋·SDK는 보존, 실행 중이던 에뮬레이터만 중단).
+- GitHub 푸시: 계속 403(Claude GitHub App 권한 없음). 전체 이력을 git bundle로 사용자에게 전달.
+- 최종 보고: `docs/FINAL_HANDOFF.md`.

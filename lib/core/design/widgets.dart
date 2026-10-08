@@ -112,23 +112,22 @@ class FjQuietButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = FjColors.of(context);
     final t = FjText.of(context);
-    return Align(
-      alignment: alignment,
-      child: TextButton(
-        onPressed: onPressed,
-        style: TextButton.styleFrom(
-          foregroundColor: c.accent,
-          minimumSize: const Size(
-            FjSpace.minTouchTarget,
-            FjSpace.minTouchTarget,
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
-          tapTargetSize: MaterialTapTargetSize.padded,
-          textStyle: t.uiStrong.copyWith(fontSize: 15),
-        ),
-        child: Text(trailingArrow ? '$label  →' : label),
+    final button = TextButton(
+      onPressed: onPressed,
+      style: TextButton.styleFrom(
+        foregroundColor: c.accent,
+        minimumSize: const Size(FjSpace.minTouchTarget, FjSpace.minTouchTarget),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+        tapTargetSize: MaterialTapTargetSize.padded,
+        alignment: alignment,
+        textStyle: t.uiStrong.copyWith(fontSize: 15),
       ),
+      child: Text(trailingArrow ? '$label  →' : label),
     );
+    // A centred action hugs its label; a left-aligned one ("다음 이야기 읽기 →")
+    // spans the row so the whole line is the touch target.
+    if (alignment == Alignment.center) return Center(child: button);
+    return SizedBox(width: double.infinity, child: button);
   }
 }
 
@@ -247,42 +246,46 @@ class FjListRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = FjColors.of(context);
     final t = FjText.of(context);
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        constraints: const BoxConstraints(minHeight: 60),
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: c.divider)),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(title, style: t.ui),
-                  if (subtitle != null) ...[
-                    const SizedBox(height: 2),
-                    Text(subtitle!, style: t.meta),
+    // MergeSemantics: a trailing switch is announced together with its title
+    // ("매일 읽기 알림, 스위치, 켜짐") instead of as an unlabeled control.
+    return MergeSemantics(
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 60),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: c.divider)),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(title, style: t.ui),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 2),
+                      Text(subtitle!, style: t.meta),
+                    ],
                   ],
-                ],
-              ),
-            ),
-            if (value != null)
-              Flexible(
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 16),
-                  child: Text(
-                    value!,
-                    style: t.ui.copyWith(color: c.textSecondary),
-                    textAlign: TextAlign.end,
-                  ),
                 ),
               ),
-            ?trailing,
-          ],
+              if (value != null)
+                Flexible(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 16),
+                    child: Text(
+                      value!,
+                      style: t.ui.copyWith(color: c.textSecondary),
+                      textAlign: TextAlign.end,
+                    ),
+                  ),
+                ),
+              ?trailing,
+            ],
+          ),
         ),
       ),
     );

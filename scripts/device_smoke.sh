@@ -5,6 +5,7 @@
 # Exit codes: 0 = passed, 1 = failed, 2 = could not verify (no device).
 #
 # Usage: scripts/device_smoke.sh [device-serial]
+# SMOKE_WAIT=<seconds> overrides the launch wait (default 8; slow emulators need more).
 set -uo pipefail
 
 cd "$(dirname "$0")/.."
@@ -44,7 +45,8 @@ echo "Launching $PACKAGE"
   exit 1
 }
 
-sleep 8
+WAIT="${SMOKE_WAIT:-8}"
+sleep "$WAIT"
 PID="$("${ADB[@]}" shell pidof "$PACKAGE" | tr -d '\r')"
 mkdir -p build
 LOG=build/device_smoke_logcat.txt
@@ -52,7 +54,7 @@ LOG=build/device_smoke_logcat.txt
 "${ADB[@]}" exec-out screencap -p > build/device_smoke_launch.png 2>/dev/null || true
 
 if [[ -z "$PID" ]]; then
-  echo "FAILED: app process is not running 8s after launch. See $LOG" >&2
+  echo "FAILED: app process is not running ${WAIT}s after launch. See $LOG" >&2
   exit 1
 fi
 if grep -E "FATAL EXCEPTION|AndroidRuntime: .*$PACKAGE|Unhandled Exception" "$LOG" >/dev/null; then

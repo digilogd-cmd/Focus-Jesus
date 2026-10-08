@@ -17,44 +17,59 @@ double contrast(Color a, Color b) {
 
 void main() {
   group('palette contrast (WCAG)', () {
-    for (final (name, c) in [('light', FjColors.light), ('dark', FjColors.dark)]) {
-      test('$name: body text ≥ 7:1, secondary ≥ 4.5:1, accent ≥ 4.5:1, button label ≥ 4.5:1', () {
-        expect(contrast(c.textPrimary, c.background), greaterThanOrEqualTo(7));
-        expect(contrast(c.textSecondary, c.background), greaterThanOrEqualTo(4.5));
-        expect(contrast(c.accent, c.background), greaterThanOrEqualTo(4.5));
-        expect(contrast(c.onAccent, c.accent), greaterThanOrEqualTo(4.5));
-      });
+    for (final (name, c) in [
+      ('light', FjColors.light),
+      ('dark', FjColors.dark),
+    ]) {
+      test(
+        '$name: body text ≥ 7:1, secondary ≥ 4.5:1, accent ≥ 4.5:1, button label ≥ 4.5:1',
+        () {
+          expect(
+            contrast(c.textPrimary, c.background),
+            greaterThanOrEqualTo(7),
+          );
+          expect(
+            contrast(c.textSecondary, c.background),
+            greaterThanOrEqualTo(4.5),
+          );
+          expect(contrast(c.accent, c.background), greaterThanOrEqualTo(4.5));
+          expect(contrast(c.onAccent, c.accent), greaterThanOrEqualTo(4.5));
+        },
+      );
     }
   });
 
   for (final theme in [ThemePreference.light, ThemePreference.dark]) {
-    testWidgets('main screens meet tap-target and labelling guidelines (${theme.id})', (tester) async {
-      usePhoneSize(tester);
-      final handle = tester.ensureSemantics();
-      final app = await TestApp.create(settings: onboarded(theme: theme));
-      addTearDown(app.dispose);
-      await tester.pumpWidget(app.widget);
-      await tester.pumpAndSettle();
+    testWidgets(
+      'main screens meet tap-target and labelling guidelines (${theme.id})',
+      (tester) async {
+        usePhoneSize(tester);
+        final handle = tester.ensureSemantics();
+        final app = await TestApp.create(settings: onboarded(theme: theme));
+        addTearDown(app.dispose);
+        await tester.pumpWidget(app.widget);
+        await tester.pumpAndSettle();
 
-      Future<void> check() async {
-        await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
-        await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
-        await expectLater(tester, meetsGuideline(textContrastGuideline));
-      }
+        Future<void> check() async {
+          await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+          await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+          await expectLater(tester, meetsGuideline(textContrastGuideline));
+        }
 
-      await check(); // today
-      await tester.tap(find.byKey(const ValueKey('today-read')));
-      await tester.pumpAndSettle();
-      await check(); // reader
-      final router = app.container.read(routerProvider);
-      router.go(Routes.journey);
-      await tester.pumpAndSettle();
-      await check();
-      router.go(Routes.settings);
-      await tester.pumpAndSettle();
-      await check();
-      handle.dispose();
-    });
+        await check(); // today
+        await tester.tap(find.byKey(const ValueKey('today-read')));
+        await tester.pumpAndSettle();
+        await check(); // reader
+        final router = app.container.read(routerProvider);
+        router.go(Routes.journey);
+        await tester.pumpAndSettle();
+        await check();
+        router.go(Routes.settings);
+        await tester.pumpAndSettle();
+        await check();
+        handle.dispose();
+      },
+    );
   }
 
   testWidgets('onboarding meets tap-target guideline', (tester) async {
@@ -75,7 +90,9 @@ void main() {
     handle.dispose();
   });
 
-  testWidgets('reduced motion: transitions collapse to zero duration', (tester) async {
+  testWidgets('reduced motion: transitions collapse to zero duration', (
+    tester,
+  ) async {
     late Duration measured;
     await tester.pumpWidget(
       MediaQuery(

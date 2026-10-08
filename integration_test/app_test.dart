@@ -24,10 +24,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 Finder byKey(String k) => find.byKey(ValueKey(k));
 
+void log(String step) => debugPrint('[journey] $step');
+
 /// Launches the app exactly as main() does.
 Future<ProviderContainer> launch(WidgetTester tester) async {
+  log('launch: loading dependencies');
   final deps = await loadAppDependencies();
+  log('launch: creating container');
   final container = await createAppContainer(deps);
+  log('launch: pumping app');
   await tester.pumpWidget(
     UncontrolledProviderScope(
       container: container,
@@ -71,10 +76,13 @@ void main() {
     'first-run journey: onboarding → read → resume → note → complete → calendar → more → restart',
     (tester) async {
       // Fresh install: remove any previous database and settings.
+      log('reset storage');
       final dbDir = await platformDatabaseFactory().getDatabasesPath();
       final dbFile = File(p.join(dbDir, AppDatabase.fileName));
       if (dbFile.existsSync()) dbFile.deleteSync();
       (await SharedPreferences.getInstance()).clear();
+
+      log('1. Onboarding.');
 
       // 1. Onboarding.
       var container = await launch(tester);
@@ -87,6 +95,8 @@ void main() {
       await tapVisible(tester, byKey('onboarding-skip-reminder'));
       expect(byKey('today-title'), findsOneWidget);
       expect(find.text(keepAll('세상은 왜 창조되었을까?')), findsOneWidget);
+
+      log('2. Read DAY 01.');
 
       // 2. Read DAY 01.
       await tapVisible(tester, byKey('today-read'));
@@ -107,6 +117,8 @@ void main() {
           .pixels;
       expect(scrolled, greaterThan(1000));
 
+      log('3. Quit mid-chapter, relaunch, continue where we left off.');
+
       // 3. Quit mid-chapter, relaunch, continue where we left off.
       // The real OS sequence when the user leaves the app.
       for (final state in [
@@ -116,9 +128,10 @@ void main() {
       ]) {
         binding.handleAppLifecycleStateChanged(state);
       }
-      await tester.pumpAndSettle();
-      await terminate(tester, container);
-      // A new process starts in the foreground.
+      // While paused the engine draws no frames (as on a real phone), so wait
+      // in real time for the background save instead of pumping.
+      await Future<void>.delayed(const Duration(seconds: 1));
+      // The OS kills the process; a new one starts in the foreground.
       for (final state in [
         AppLifecycleState.hidden,
         AppLifecycleState.inactive,
@@ -126,6 +139,7 @@ void main() {
       ]) {
         binding.handleAppLifecycleStateChanged(state);
       }
+      await terminate(tester, container);
       container = await launch(tester);
       expect(find.text('이어서 읽기'), findsOneWidget);
       await tapVisible(tester, byKey('today-read'));
@@ -135,12 +149,16 @@ void main() {
           .pixels;
       expect(restored, closeTo(scrolled, 2));
 
+      log('4. Change reading mode while reading.');
+
       // 4. Change reading mode while reading.
       await tapVisible(tester, byKey('reader-settings'));
       await tapVisible(tester, byKey('sheet-minutes-5'));
       await tester.tapAt(const Offset(20, 20));
       await tester.pumpAndSettle();
       expect(container.read(settingsProvider).minutes, ReadingMinutes.five);
+
+      log('5. Write a reflection note.');
 
       // 5. Write a reflection note.
       await scrollTo(tester, byKey('reflection-note-0'));
@@ -150,15 +168,21 @@ void main() {
       );
       await tester.pump(const Duration(seconds: 1));
 
+      log('6. Complete the story.');
+
       // 6. Complete the story.
       await scrollTo(tester, byKey('reader-complete'));
       await tapVisible(tester, byKey('reader-complete'));
       expect(byKey('completion-title'), findsOneWidget);
 
+      log('7. The calendar shows today.');
+
       // 7. The calendar shows today.
       await tapVisible(tester, byKey('completion-home'));
       await tapVisible(tester, byKey('nav-1'));
       expect(find.bySemanticsLabel(RegExp(r'오늘, 이야기 1개 읽음')), findsOneWidget);
+
+      log('8. Read one more story the same day.');
 
       // 8. Read one more story the same day.
       await tapVisible(tester, byKey('nav-0'));
@@ -170,6 +194,8 @@ void main() {
       await tapVisible(tester, byKey('completion-home'));
       await tapVisible(tester, byKey('nav-1'));
       expect(find.bySemanticsLabel(RegExp(r'오늘, 이야기 2개 읽음')), findsOneWidget);
+
+      log('9. Quit and relaunch (in-process), 10. everything is still there.');
 
       // 9. Quit and relaunch (in-process), 10. everything is still there.
       await terminate(tester, container);

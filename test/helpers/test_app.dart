@@ -123,6 +123,8 @@ class TestApp {
     bool linkSucceeds = true,
     Database? database,
     Map<String, Object> preferences = const {},
+    bool launchedFromReminder = false,
+    Future<String?> Function()? timeZoneRefresher,
   }) async {
     await initializeDateFormatting('ko_KR');
     SharedPreferences.setMockInitialValues(preferences);
@@ -143,6 +145,8 @@ class TestApp {
         timeZoneName: 'Asia/Seoul',
         clock: clock,
         linkOpener: links,
+        launchedFromReminder: launchedFromReminder,
+        timeZoneRefresher: timeZoneRefresher,
       ),
     );
     return TestApp._(container, clock, scheduler, links, db);

@@ -30,6 +30,7 @@ class AppDependencies {
     this.clock = const SystemClock(),
     this.launchedFromReminder = false,
     this.linkOpener,
+    this.timeZoneRefresher,
   });
 
   final Database database;
@@ -40,6 +41,9 @@ class AppDependencies {
   final Clock clock;
   final bool launchedFromReminder;
   final LinkOpener? linkOpener;
+
+  /// Re-detects the device zone on resume; production uses [TimeZoneService].
+  final Future<String?> Function()? timeZoneRefresher;
 }
 
 bool get _isDesktop =>
@@ -62,7 +66,8 @@ Future<Database> openAppDatabase([DatabaseFactory? factory]) async {
 /// Production bootstrap.
 Future<AppDependencies> loadAppDependencies() async {
   await initializeDateFormatting('ko_KR');
-  final timeZone = await TimeZoneService().configureLocal();
+  final timeZones = TimeZoneService();
+  final timeZone = await timeZones.configureLocal();
   final results = await Future.wait<Object>([
     openAppDatabase(),
     SharedPreferences.getInstance(),
@@ -82,6 +87,7 @@ Future<AppDependencies> loadAppDependencies() async {
     season: results[2] as Season,
     scheduler: scheduler,
     timeZoneName: timeZone,
+    timeZoneRefresher: timeZones.configureLocal,
     launchedFromReminder: launched,
   );
 }
@@ -97,7 +103,9 @@ Future<ProviderContainer> createAppContainer(AppDependencies deps) async {
       sharedPreferencesProvider.overrideWithValue(deps.preferences),
       seasonProvider.overrideWithValue(deps.season),
       reminderSchedulerProvider.overrideWithValue(deps.scheduler),
-      timeZoneNameProvider.overrideWithValue(deps.timeZoneName),
+      initialTimeZoneProvider.overrideWithValue(deps.timeZoneName),
+      if (deps.timeZoneRefresher != null)
+        timeZoneRefresherProvider.overrideWithValue(deps.timeZoneRefresher!),
       clockProvider.overrideWithValue(deps.clock),
       initialLocationProvider.overrideWithValue(
         deps.launchedFromReminder ? Routes.continueReading : Routes.today,

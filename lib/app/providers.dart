@@ -34,8 +34,33 @@ final reminderSchedulerProvider = Provider<ReminderScheduler>(
       throw UnimplementedError('reminderSchedulerProvider must be overridden'),
 );
 
+/// Zone detected at launch (overridden in bootstrap).
+final initialTimeZoneProvider = Provider<String?>((ref) => null);
+
+/// Re-detects the device zone and points `tz.local` at it. Overridden in tests.
+final timeZoneRefresherProvider = Provider<Future<String?> Function()>(
+  (ref) =>
+      () async => ref.read(timeZoneNameProvider),
+);
+
 /// IANA zone in use, recorded with completions. Null when unknown.
-final timeZoneNameProvider = Provider<String?>((ref) => null);
+class TimeZoneName extends Notifier<String?> {
+  @override
+  String? build() => ref.watch(initialTimeZoneProvider);
+
+  /// Picks up a zone change made while the app was in the background.
+  /// Returns true when the zone changed.
+  Future<bool> refresh() async {
+    final detected = await ref.read(timeZoneRefresherProvider)();
+    if (detected == null || detected == state) return false;
+    state = detected;
+    return true;
+  }
+}
+
+final timeZoneNameProvider = NotifierProvider<TimeZoneName, String?>(
+  TimeZoneName.new,
+);
 
 final clockProvider = Provider<Clock>((ref) => const SystemClock());
 

@@ -25,9 +25,10 @@ class _FocusJesusAppState extends ConsumerState<FocusJesusApp> {
 
   /// Returning to the app may cross midnight or a time-zone change: refresh
   /// date-based views and re-plan reminders.
-  void _onResume() {
+  Future<void> _onResume() async {
+    await ref.read(timeZoneNameProvider.notifier).refresh();
     ref.read(dayTickProvider.notifier).bump();
-    ref.read(reminderCoordinatorProvider).sync();
+    await ref.read(reminderCoordinatorProvider).sync();
   }
 
   @override

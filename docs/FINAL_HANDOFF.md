@@ -56,7 +56,10 @@ ABI: arm64-v8a, armeabi-v7a, x86_64 (유니버설 APK).
 | 권한 | POST_NOTIFICATIONS, RECEIVE_BOOT_COMPLETED, VIBRATE (+ Android 13 이상 내부 리시버 보호용 자동 권한) |
 
 같은 커밋에서 두 번 빌드한 APK의 SHA-256이 동일함을 확인했습니다(재현 가능한 빌드).
-갤럭시 전용으로 크기를 줄이려면 `flutter build apk --release --split-per-abi`로 arm64 APK만 배포할 수 있습니다.
+갤럭시용 arm64 전용 APK도 같은 커밋에서 만들었습니다(사용자 전달용, 30MB 전송 제한 때문):
+`flutter build apk --release --split-per-abi --target-platform android-arm64` →
+`app-arm64-v8a-release.apk`, 26,125,178 bytes, SHA-256 `d1dc53cb3a4e075c4486bc429f437772ecf4dcfa571271c9932ed011dc559770`,
+versionCode 2001(ABI 분할 시 Flutter가 자동으로 1000×ABI를 더함), 같은 디버그 키 서명.
 
 ## 5. 자동 테스트 실행 결과
 

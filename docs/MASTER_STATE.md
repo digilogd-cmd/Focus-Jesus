@@ -24,7 +24,7 @@
   intl 0.20.3, path 1.9.1. 모두 pub.dev 점수 140–160/160, 라이선스 MIT/BSD/Apache-2.0.
 - 폰트: Noto Serif KR(OFL, Reserved Font Name 없음) 400/600 정적 인스턴스를 KS X 1001 한글 2,350자 + 라틴/문장부호로 서브셋(각 1.5 MB).
   Pretendard(OFL, Reserved Font Name "Pretendard")는 RFN 조항 때문에 **수정하지 않은 원본** Regular/Medium/SemiBold 사용(각 1.6 MB).
-  라이선스 전문: `docs/licenses/`.
+  라이선스 전문: `assets/licenses/` (앱의 오픈소스 라이선스 화면에도 표시).
 - 성경 데이터: 66권 장·절 수 표(KJV 체계, 1,189장 / 31,102절)를 `tool/generate_bible_books.py`로 생성 → `lib/core/bible/bible_books.g.dart`.
   외부 링크: 대한성서공회 개역개정 읽기 페이지(`bskorea.or.kr`), 66권 코드 중 15권 샘플을 실제 요청으로 확인.
 - 테스트(실행 결과):
@@ -37,3 +37,26 @@
 
 ## 진행 중 메모
 - 콘텐츠(Phase 3) 원고 작성은 일정 단축을 위해 Phase 1–2와 병렬로 시작. 검증 게이트는 Phase 순서대로 통과시킴.
+
+## Phase 1 — 디자인 시스템 ✅
+
+- 구현: `lib/core/design/tokens.dart`(색상 `FjColors` 라이트/다크 — 명세 팔레트 그대로, 타입 스케일 `FjText`, 간격 `FjSpace`, 모션 `FjMotion` — 시스템 애니메이션 감소 설정 시 0ms),
+  `lib/app/theme.dart`(Material 3 기반 커스텀 테마, 그림자·스플래시 제거), `lib/core/design/widgets.dart`(워드마크, 읽기 칼럼 최대 560dp + 좌우 26dp,
+  주요 버튼 54dp, 조용한 텍스트 버튼 48dp 이상, 옵션 타일, 설정 행), 하단 텍스트 내비게이션(아이콘 없음), 앱 아이콘(FJ 모노그램, 적응형 아이콘 포함),
+  상태바 알림 아이콘(벡터), 런치 배경(종이색/다크).
+- 한국어 조판: Flutter는 한글을 음절 단위로 줄바꿈해 "합니/다"처럼 단어가 잘림 → `keepAll()`(U+2060 WORD JOINER)로 어절 단위 줄바꿈 적용.
+  한글 라벨에는 넓은 자간을 쓰지 않도록 조정.
+- 검증: 실제 폰트로 렌더링한 스크린샷 33장(`test_screenshots/`, 라이트/다크, 360dp 소형, 1.3배 글꼴, 820dp 태블릿)을 직접 확인.
+  발견·수정한 결함 3건: (1) 어절 중간 줄바꿈, (2) 상단 바 아래로 본문이 잘려 보임 → 스크롤 시 헤어라인 추가, (3) 한글 라벨 과한 자간.
+- 통과 조건: 한글 폰트 정상 렌더링 ✓, 오버플로 없음(위젯 테스트로 360dp·2.0배까지 검증) ✓, 다크 모드 가독성 ✓, 본문 장식 없음 ✓.
+
+## Phase 2 — 코어 앱 ✅
+
+- 구현: 부트스트랩(`lib/app/bootstrap.dart`), Riverpod 프로바이더(`lib/app/providers.dart`), go_router(온보딩 리다이렉트, 하단 탭 3개, 읽기/완료 화면),
+  온보딩 4단계, 오늘 화면, 몰입형 읽기 화면(스크롤 시 상단 바 숨김, 2dp 진행선, 읽기 설정 시트), 묵상 메모(600ms 디바운스 자동 저장),
+  읽기 위치 자동 저장·복원(오프셋 + 비율 + 레이아웃 키: 시간·수준·글꼴 배율·화면 폭이 달라지면 비율로 복원),
+  SQLite 스키마 v1(`reading_progress`, `completion_event`, `reflection_note`) + 마이그레이션 틀, 외부 성경 링크(실패 시 안내).
+- 테스트: 단위 49개 + 위젯 28개 = **77개 전부 통과** (`flutter test`), `flutter analyze` 무오류, `dart format` 변경 없음.
+  - 온보딩 설정 저장·로드, 권한 거부 시에도 온보딩 완료, 앱 재시작(같은 DB 파일 재오픈) 후 기록·메모 유지,
+    읽던 위치 복원(오프셋 ±1px), 외부 링크 성공/실패, 챕터 간 이동(다음 이야기 → DAY 02).
+- 테스트 중 발견·수정한 결함: sqflite 단일 인스턴스 캐시 때문에 테스트 간 `:memory:` DB가 공유되던 문제 → `singleInstance` 옵션 추가.

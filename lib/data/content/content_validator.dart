@@ -27,8 +27,18 @@ const int kMinTierIncrementChars = 1500;
 const int kMaxQuotedChars = 50;
 
 const List<String> _forbiddenMarkers = [
-  'lorem', 'ipsum', 'todo', 'tbd', 'placeholder', 'xxx', '더미', '예시 문단',
-  '내용 추가', '추후 작성', '작성 예정', '(생략)',
+  'lorem',
+  'ipsum',
+  'todo',
+  'tbd',
+  'placeholder',
+  'xxx',
+  '더미',
+  '예시 문단',
+  '내용 추가',
+  '추후 작성',
+  '작성 예정',
+  '(생략)',
 ];
 
 final RegExp _quoted = RegExp(r'[“"「『]([^”"」』]*)[”"」』]');
@@ -45,25 +55,41 @@ List<ContentIssue> validateChapter(Chapter c) {
   final expectedId = '${c.seasonId}-d${c.order.toString().padLeft(2, '0')}';
   if (c.id != expectedId) err('id', 'expected "$expectedId"');
   if (c.reviewStatus == ReviewStatus.approved) {
-    err('reviewStatus', 'AI-assisted drafts cannot be marked approved without a human theology review');
+    err(
+      'reviewStatus',
+      'AI-assisted drafts cannot be marked approved without a human theology review',
+    );
   }
 
   // Lengths of display strings.
   if (c.title.length > 32) err('title', 'too long (${c.title.length} > 32)');
-  if (c.summary.length > 70) err('summary', 'too long (${c.summary.length} > 70)');
-  if (c.keyMessage.length > 120) err('keyMessage', 'too long (${c.keyMessage.length} > 120)');
+  if (c.summary.length > 70) {
+    err('summary', 'too long (${c.summary.length} > 70)');
+  }
+  if (c.keyMessage.length > 120) {
+    err('keyMessage', 'too long (${c.keyMessage.length} > 120)');
+  }
 
   // References.
-  if (!c.references.any((r) => r.primary)) err('references', 'needs a primary reference');
+  if (!c.references.any((r) => r.primary)) {
+    err('references', 'needs a primary reference');
+  }
 
   // Questions.
   if (c.reflectionQuestions.length != 3) {
-    err('reflectionQuestions', 'exactly 3 questions required, found ${c.reflectionQuestions.length}');
+    err(
+      'reflectionQuestions',
+      'exactly 3 questions required, found ${c.reflectionQuestions.length}',
+    );
   }
   for (final q in c.reflectionQuestions) {
-    if (!q.endsWith('?')) err('reflectionQuestions', 'question must end with "?": $q');
+    if (!q.endsWith('?')) {
+      err('reflectionQuestions', 'question must end with "?": $q');
+    }
   }
-  if (c.learningObjectives.length < 2) err('learningObjectives', 'at least 2 required');
+  if (c.learningObjectives.length < 2) {
+    err('learningObjectives', 'at least 2 required');
+  }
 
   // Sections: ids, block content.
   final ids = <String>{};
@@ -77,13 +103,23 @@ List<ContentIssue> validateChapter(Chapter c) {
       if (b.type == BlockType.paragraph && len < 30) {
         err('section ${s.id}', 'paragraph too short ($len chars): ${b.text}');
       }
-      if (len > 900) err('section ${s.id}', 'block too long ($len chars) for comfortable reading');
+      if (len > 900) {
+        err(
+          'section ${s.id}',
+          'block too long ($len chars) for comfortable reading',
+        );
+      }
       if (b.type == BlockType.emphasis && len > 140) {
-        err('section ${s.id}', 'emphasis must be a single sentence (≤140 chars)');
+        err(
+          'section ${s.id}',
+          'emphasis must be a single sentence (≤140 chars)',
+        );
       }
     }
   }
-  if (!c.sections.any((s) => s.blocks.any((b) => b.type == BlockType.emphasis))) {
+  if (!c.sections.any(
+    (s) => s.blocks.any((b) => b.type == BlockType.emphasis),
+  )) {
     err('sections', 'at least one emphasis sentence required');
   }
 
@@ -105,18 +141,33 @@ List<ContentIssue> validateChapter(Chapter c) {
         err('mode ${mode.label}', 'missing ${required.name} section');
       }
     }
-    if (!included.any((s) => s.blocks.any((b) => b.type == BlockType.scripture))) {
-      err('mode ${mode.label}', 'needs at least one scripture pointer in the reading flow');
+    if (!included.any(
+      (s) => s.blocks.any((b) => b.type == BlockType.scripture),
+    )) {
+      err(
+        'mode ${mode.label}',
+        'needs at least one scripture pointer in the reading flow',
+      );
     }
   }
 
   // Level layers must change the reading in every mode.
   final coreSections = c.sections.where((s) => s.tier == ReadingMinutes.five);
   for (final layer in ReadingLevel.values) {
-    final inCore = coreSections.fold<int>(0, (n, s) => n + (s.levelNotes[layer]?.length ?? 0));
-    final total = c.sections.fold<int>(0, (n, s) => n + (s.levelNotes[layer]?.length ?? 0));
-    if (inCore < 1) err('levelNotes', '${layer.id} needs a note in a 5-minute section');
-    if (total < 4) err('levelNotes', '${layer.id} needs at least 4 notes (found $total)');
+    final inCore = coreSections.fold<int>(
+      0,
+      (n, s) => n + (s.levelNotes[layer]?.length ?? 0),
+    );
+    final total = c.sections.fold<int>(
+      0,
+      (n, s) => n + (s.levelNotes[layer]?.length ?? 0),
+    );
+    if (inCore < 1) {
+      err('levelNotes', '${layer.id} needs a note in a 5-minute section');
+    }
+    if (total < 4) {
+      err('levelNotes', '${layer.id} needs at least 4 notes (found $total)');
+    }
   }
 
   // Reading time per mode/level.
@@ -134,8 +185,12 @@ List<ContentIssue> validateChapter(Chapter c) {
         );
       }
       final chars = composed.characterCount;
-      if (previousChars >= 0 && chars - previousChars < kMinTierIncrementChars) {
-        err('time ${mode.label}/${level.label}', 'adds only ${chars - previousChars} chars over the shorter mode');
+      if (previousChars >= 0 &&
+          chars - previousChars < kMinTierIncrementChars) {
+        err(
+          'time ${mode.label}/${level.label}',
+          'adds only ${chars - previousChars} chars over the shorter mode',
+        );
       }
       previousChars = chars;
     }
@@ -146,12 +201,17 @@ List<ContentIssue> validateChapter(Chapter c) {
   for (final (where, text) in chapterTexts(c)) {
     final lower = text.toLowerCase();
     for (final marker in _forbiddenMarkers) {
-      if (lower.contains(marker)) err(where, 'contains placeholder marker "$marker"');
+      if (lower.contains(marker)) {
+        err(where, 'contains placeholder marker "$marker"');
+      }
     }
     for (final m in _quoted.allMatches(text)) {
       final quoted = countReadableCharacters(m.group(1)!);
       if (quoted > kMaxQuotedChars) {
-        err(where, 'quoted passage of $quoted chars; paraphrase instead of quoting a translation');
+        err(
+          where,
+          'quoted passage of $quoted chars; paraphrase instead of quoting a translation',
+        );
       }
     }
     final key = normalizeForDuplicateCheck(text);
@@ -170,13 +230,20 @@ List<ContentIssue> validateSeason(List<Chapter> chapters) {
   final orders = chapters.map((c) => c.order).toList()..sort();
   for (var i = 0; i < orders.length; i++) {
     if (orders[i] != i + 1) {
-      issues.add(ContentIssue('season', 'chapter orders must be 1..${orders.length} without gaps: $orders'));
+      issues.add(
+        ContentIssue(
+          'season',
+          'chapter orders must be 1..${orders.length} without gaps: $orders',
+        ),
+      );
       break;
     }
   }
   final ids = <String>{};
   for (final c in chapters) {
-    if (!ids.add(c.id)) issues.add(ContentIssue('season', 'duplicate chapter id ${c.id}'));
+    if (!ids.add(c.id)) {
+      issues.add(ContentIssue('season', 'duplicate chapter id ${c.id}'));
+    }
   }
   final seen = <String, String>{};
   for (final c in chapters) {
@@ -185,7 +252,9 @@ List<ContentIssue> validateSeason(List<Chapter> chapters) {
       if (key.length < 40) continue;
       final previous = seen[key];
       if (previous != null && !previous.startsWith('${c.id} ')) {
-        issues.add(ContentIssue('${c.id} $where', 'repeats text from $previous'));
+        issues.add(
+          ContentIssue('${c.id} $where', 'repeats text from $previous'),
+        );
       }
       seen[key] = '${c.id} $where';
     }

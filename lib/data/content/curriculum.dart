@@ -46,13 +46,17 @@ class Curriculum {
   final String description;
   final List<CurriculumDay> days;
 
-  List<CurriculumDay> get availableDays => days.where((d) => d.isAvailable).toList();
+  List<CurriculumDay> get availableDays =>
+      days.where((d) => d.isAvailable).toList();
 
   factory Curriculum.fromJson(Map<String, Object?> json) {
     String str(Map<String, Object?> m, String key, String path) {
       final v = m[key];
       if (v is! String || v.trim().isEmpty) {
-        throw ContentFormatException('$path.$key', 'expected a non-empty string');
+        throw ContentFormatException(
+          '$path.$key',
+          'expected a non-empty string',
+        );
       }
       return v.trim();
     }
@@ -66,15 +70,23 @@ class Curriculum {
       final path = '\$.days[$i]';
       final m = (rawDays[i] as Map).cast<String, Object?>();
       final day = m['day'];
-      if (day is! int) throw ContentFormatException('$path.day', 'expected an integer');
+      if (day is! int) {
+        throw ContentFormatException('$path.day', 'expected an integer');
+      }
       final status = switch (m['status']) {
         'available' => CurriculumDayStatus.available,
         'planned' => CurriculumDayStatus.planned,
-        final other => throw ContentFormatException('$path.status', 'unknown status $other'),
+        final other => throw ContentFormatException(
+          '$path.status',
+          'unknown status $other',
+        ),
       };
       final refs = m['references'];
       if (refs is! List || refs.isEmpty) {
-        throw ContentFormatException('$path.references', 'expected a non-empty list');
+        throw ContentFormatException(
+          '$path.references',
+          'expected a non-empty list',
+        );
       }
       final themes = m['themes'];
       days.add(
@@ -88,7 +100,10 @@ class Curriculum {
                 try {
                   return BibleReference.parse(r as String);
                 } on BibleReferenceFormatException catch (e) {
-                  throw ContentFormatException('$path.references', e.toString());
+                  throw ContentFormatException(
+                    '$path.references',
+                    e.toString(),
+                  );
                 }
               }(),
           ],
@@ -108,30 +123,58 @@ class Curriculum {
   }
 }
 
-List<ContentIssue> validateCurriculum(Curriculum curriculum, List<Chapter> chapters) {
+List<ContentIssue> validateCurriculum(
+  Curriculum curriculum,
+  List<Chapter> chapters,
+) {
   final issues = <ContentIssue>[];
   final byId = {for (final c in chapters) c.id: c};
   for (var i = 0; i < curriculum.days.length; i++) {
     final d = curriculum.days[i];
     final where = 'curriculum day ${d.day}';
-    if (d.day != i + 1) issues.add(ContentIssue(where, 'days must be numbered 1..n in order'));
-    final expectedId = '${curriculum.seasonId}-d${d.day.toString().padLeft(2, '0')}';
-    if (d.chapterId != expectedId) issues.add(ContentIssue(where, 'chapterId must be $expectedId'));
+    if (d.day != i + 1) {
+      issues.add(ContentIssue(where, 'days must be numbered 1..n in order'));
+    }
+    final expectedId =
+        '${curriculum.seasonId}-d${d.day.toString().padLeft(2, '0')}';
+    if (d.chapterId != expectedId) {
+      issues.add(ContentIssue(where, 'chapterId must be $expectedId'));
+    }
     if (d.isAvailable) {
       final chapter = byId[d.chapterId];
       if (chapter == null) {
-        issues.add(ContentIssue(where, 'marked available but no chapter manuscript exists'));
+        issues.add(
+          ContentIssue(
+            where,
+            'marked available but no chapter manuscript exists',
+          ),
+        );
       } else if (chapter.title != d.title) {
-        issues.add(ContentIssue(where, 'title differs from chapter: "${chapter.title}"'));
+        issues.add(
+          ContentIssue(where, 'title differs from chapter: "${chapter.title}"'),
+        );
       }
-      if (d.file == null) issues.add(ContentIssue(where, 'available day needs a file'));
+      if (d.file == null) {
+        issues.add(ContentIssue(where, 'available day needs a file'));
+      }
     } else if (d.file != null) {
-      issues.add(ContentIssue(where, 'planned day must not reference a manuscript file'));
+      issues.add(
+        ContentIssue(where, 'planned day must not reference a manuscript file'),
+      );
     }
   }
   for (final c in chapters) {
-    final listed = curriculum.days.any((d) => d.chapterId == c.id && d.isAvailable);
-    if (!listed) issues.add(ContentIssue(c.id, 'chapter exists but is not available in the curriculum'));
+    final listed = curriculum.days.any(
+      (d) => d.chapterId == c.id && d.isAvailable,
+    );
+    if (!listed) {
+      issues.add(
+        ContentIssue(
+          c.id,
+          'chapter exists but is not available in the curriculum',
+        ),
+      );
+    }
   }
   return issues;
 }

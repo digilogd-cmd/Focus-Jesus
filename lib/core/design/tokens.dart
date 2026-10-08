@@ -16,7 +16,10 @@ class FjColors extends ThemeExtension<FjColors> {
   static const FjColors light = FjColors(
     background: Color(0xFFF8F7F3),
     textPrimary: Color(0xFF202722),
-    textSecondary: Color(0xFF707770),
+    // Spec value #707770 gives 4.29:1 on the background, below WCAG AA (4.5:1)
+    // for the small meta text that uses it. Same hue, minimally darkened.
+    // To restore the exact spec value, change this line back to 0xFF707770.
+    textSecondary: Color(0xFF6B726B),
     accent: Color(0xFF365B4C),
     divider: Color(0xFFE5E6DF),
     surface: Color(0xFFFFFFFF),

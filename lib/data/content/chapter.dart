@@ -29,7 +29,8 @@ enum ReviewStatus {
 
   static ReviewStatus parse(String id, String path) => values.firstWhere(
     (s) => s.id == id,
-    orElse: () => throw ContentFormatException(path, 'unknown review status "$id"'),
+    orElse: () =>
+        throw ContentFormatException(path, 'unknown review status "$id"'),
   );
 }
 
@@ -47,7 +48,8 @@ enum SectionKind {
 
   static SectionKind parse(String id, String path) => values.firstWhere(
     (k) => k.name == id,
-    orElse: () => throw ContentFormatException(path, 'unknown section kind "$id"'),
+    orElse: () =>
+        throw ContentFormatException(path, 'unknown section kind "$id"'),
   );
 }
 
@@ -145,25 +147,37 @@ class Chapter {
     final r = _Reader(json, path);
     final schemaVersion = r.integer('schemaVersion');
     if (schemaVersion != supportedSchemaVersion) {
-      throw ContentFormatException(path, 'unsupported schemaVersion $schemaVersion');
+      throw ContentFormatException(
+        path,
+        'unsupported schemaVersion $schemaVersion',
+      );
     }
     final sections = r.list('sections', (item, p) {
       final s = _Reader(_asMap(item, p), p);
       final tierValue = s.integer('tier');
       final tier = ReadingMinutes.values.firstWhere(
         (m) => m.minutes == tierValue,
-        orElse: () => throw ContentFormatException('$p.tier', 'tier must be 5, 10, 15 or 20'),
+        orElse: () => throw ContentFormatException(
+          '$p.tier',
+          'tier must be 5, 10, 15 or 20',
+        ),
       );
       final notesJson = s.optionalMap('levelNotes');
       final notes = <ReadingLevel, List<String>>{};
       for (final entry in notesJson.entries) {
         final level = ReadingLevel.values.firstWhere(
           (l) => l.id == entry.key,
-          orElse: () => throw ContentFormatException('$p.levelNotes', 'unknown level "${entry.key}"'),
+          orElse: () => throw ContentFormatException(
+            '$p.levelNotes',
+            'unknown level "${entry.key}"',
+          ),
         );
         final value = entry.value;
         if (value is! List) {
-          throw ContentFormatException('$p.levelNotes.${entry.key}', 'must be a list');
+          throw ContentFormatException(
+            '$p.levelNotes.${entry.key}',
+            'must be a list',
+          );
         }
         notes[level] = [
           for (var i = 0; i < value.length; i++)
@@ -179,13 +193,18 @@ class Chapter {
           final br = _Reader(_asMap(b, bp), bp);
           final type = BlockType.values.firstWhere(
             (t) => t.name == br.string('type'),
-            orElse: () => throw ContentFormatException('$bp.type', 'unknown block type'),
+            orElse: () =>
+                throw ContentFormatException('$bp.type', 'unknown block type'),
           );
           BibleReference? ref;
           if (type == BlockType.scripture) {
             ref = _parseRef(br.string('ref'), '$bp.ref');
           }
-          return ContentBlock(type: type, text: br.string('text'), reference: ref);
+          return ContentBlock(
+            type: type,
+            text: br.string('text'),
+            reference: ref,
+          );
         }),
         levelNotes: notes,
       );
@@ -200,7 +219,10 @@ class Chapter {
       subtitle: r.string('subtitle'),
       summary: r.string('summary'),
       contentVersion: r.string('contentVersion'),
-      reviewStatus: ReviewStatus.parse(r.string('reviewStatus'), '$path.reviewStatus'),
+      reviewStatus: ReviewStatus.parse(
+        r.string('reviewStatus'),
+        '$path.reviewStatus',
+      ),
       references: r.list('references', (item, p) {
         final m = _Reader(_asMap(item, p), p);
         final role = m.string('role');
@@ -259,7 +281,9 @@ class _Reader {
 
   int integer(String key) {
     final v = json[key];
-    if (v is! int) throw ContentFormatException('$path.$key', 'expected an integer');
+    if (v is! int) {
+      throw ContentFormatException('$path.$key', 'expected an integer');
+    }
     return v;
   }
 

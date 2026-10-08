@@ -81,7 +81,8 @@ ComposedChapter composeChapter(
             section: section,
             notes: [
               for (final layer in layers)
-                for (final text in section.levelNotes[layer] ?? const <String>[])
+                for (final text
+                    in section.levelNotes[layer] ?? const <String>[])
                   ComposedNote(layer: layer, text: text),
             ],
           ),

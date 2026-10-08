@@ -21,18 +21,19 @@ void main(List<String> args) {
   final files = args.isNotEmpty
       ? args
       : (Directory(seasonDir)
-              .listSync()
-              .whereType<File>()
-              .map((f) => f.path)
-              .where((p) => RegExp(r'day\d\d\.json$').hasMatch(p))
-              .toList()
-            ..sort());
+            .listSync()
+            .whereType<File>()
+            .map((f) => f.path)
+            .where((p) => RegExp(r'day\d\d\.json$').hasMatch(p))
+            .toList()
+          ..sort());
 
   final issues = <ContentIssue>[];
   final chapters = <Chapter>[];
   for (final path in files) {
     try {
-      final json = jsonDecode(File(path).readAsStringSync()) as Map<String, Object?>;
+      final json =
+          jsonDecode(File(path).readAsStringSync()) as Map<String, Object?>;
       final chapter = Chapter.fromJson(json, path: path);
       chapters.add(chapter);
       issues.addAll(validateChapter(chapter));
@@ -75,11 +76,14 @@ void main(List<String> args) {
 
 void _printStats(Chapter c) {
   stdout.writeln('\n${c.dayLabel} ${c.title}  [${c.reviewStatus.label}]');
-  stdout.writeln('            ${ReadingMinutes.values.map((m) => m.label.padLeft(14)).join()}');
+  stdout.writeln(
+    '            ${ReadingMinutes.values.map((m) => m.label.padLeft(14)).join()}',
+  );
   for (final level in ReadingLevel.values) {
     final cells = ReadingMinutes.values.map((m) {
       final composed = composeChapter(c, minutes: m, level: level);
-      return '${composed.characterCount}자 ${composed.estimatedMinutes.toStringAsFixed(1)}분'.padLeft(14);
+      return '${composed.characterCount}자 ${composed.estimatedMinutes.toStringAsFixed(1)}분'
+          .padLeft(14);
     });
     stdout.writeln('  ${level.label.padRight(8)}${cells.join()}');
   }

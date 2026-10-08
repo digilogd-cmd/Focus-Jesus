@@ -67,7 +67,10 @@ class BibleReference {
     if (v1 == null) {
       // Chapter or chapter range. `GEN 6-9:3` is not allowed.
       if (b != null) {
-        throw BibleReferenceFormatException(source, 'mixed chapter/verse range');
+        throw BibleReferenceFormatException(
+          source,
+          'mixed chapter/verse range',
+        );
       }
       endChapter = a ?? c1;
       endVerse = null;
@@ -107,7 +110,10 @@ class BibleReference {
     final startKey = c1 * 1000 + (v1 ?? 0);
     final endKey = endChapter * 1000 + (endVerse ?? 0);
     if (endKey < startKey) {
-      throw BibleReferenceFormatException(source, 'range ends before it starts');
+      throw BibleReferenceFormatException(
+        source,
+        'range ends before it starts',
+      );
     }
 
     return BibleReference._(

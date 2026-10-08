@@ -46,6 +46,8 @@ enum ReadingMinutes {
 
   bool includes(ReadingMinutes tier) => tier.minutes <= minutes;
 
-  static ReadingMinutes fromMinutes(int? minutes) =>
-      values.firstWhere((m) => m.minutes == minutes, orElse: () => ReadingMinutes.ten);
+  static ReadingMinutes fromMinutes(int? minutes) => values.firstWhere(
+    (m) => m.minutes == minutes,
+    orElse: () => ReadingMinutes.ten,
+  );
 }

@@ -11,7 +11,7 @@ import 'reminder_time_picker.dart';
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
-  static const String appVersion = '1.0.1';
+  static const String appVersion = '1.1.0';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -50,9 +50,9 @@ class SettingsScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: FjSpace.xl),
-                Text('설정', style: t.displayTitle),
+                const FjScreenTitle(en: 'SETTINGS', title: '설정'),
                 const SizedBox(height: FjSpace.xl),
-                const FjLabel('읽기'),
+                const FjDualLabel('READING', '읽기'),
                 FjListRow(
                   key: const ValueKey('settings-level'),
                   title: '이해 수준',
@@ -86,7 +86,7 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: FjSpace.xl),
-                const FjLabel('알림'),
+                const FjDualLabel('REMINDER', '알림'),
                 FjListRow(
                   key: const ValueKey('settings-reminder-toggle'),
                   title: '매일 읽기 알림',
@@ -124,7 +124,7 @@ class SettingsScreen extends ConsumerWidget {
                     },
                   ),
                 const SizedBox(height: FjSpace.xl),
-                const FjLabel('화면'),
+                const FjDualLabel('DISPLAY', '화면'),
                 FjListRow(
                   key: const ValueKey('settings-theme'),
                   title: '화면 테마',
@@ -144,7 +144,7 @@ class SettingsScreen extends ConsumerWidget {
                 const SizedBox(height: FjSpace.s),
                 Text('글자 크기는 휴대전화의 글꼴 크기 설정을 따릅니다.', style: t.meta),
                 const SizedBox(height: FjSpace.xl),
-                const FjLabel('이 앱에 대하여'),
+                const FjDualLabel('ABOUT', '이 앱에 대하여'),
                 FjListRow(
                   title: '콘텐츠 안내',
                   onTap: () => _showContentNotice(context),
@@ -222,11 +222,11 @@ class SettingsScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const FjLabel('콘텐츠 안내'),
+                  const FjDualLabel('NOTICE', '콘텐츠 안내'),
                   const SizedBox(height: FjSpace.m),
                   Text(
                     '이 앱의 해설은 성경 본문을 인용하지 않고 독립적으로 쓴 원고입니다. 실제 성경 본문은 '
-                    '대한성서공회 개역개정 웹 페이지로 연결해 드립니다.',
+                    '대한성서공회 성경플랫폼의 개역개정 본문으로 연결해 드립니다.',
                     style: t.body.copyWith(fontSize: 16),
                   ),
                   const SizedBox(height: FjSpace.m),

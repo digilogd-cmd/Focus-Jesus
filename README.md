@@ -74,7 +74,7 @@ Release APK는 현재 **디버그 키로 서명**됩니다(내부 테스트용).
 
 - `docs/MASTER_SPEC.md` — 마스터 개발 명세
 - `docs/MASTER_STATE.md` — Phase별 실제 진행·테스트 기록
-- `docs/DESIGN_SYSTEM.md` — 디자인 시스템
+- `docs/DESIGN_SYSTEM.md` — 디자인 시스템 v2 (Ink & Paper · 모션), 이전 v1은 `docs/DESIGN_SYSTEM_v1.md`
 - `docs/FINAL_HANDOFF.md` — 최종 완료 보고
 
 패키지 ID `com.focusjesus.story`는 내부 MVP용 임시 식별자입니다.

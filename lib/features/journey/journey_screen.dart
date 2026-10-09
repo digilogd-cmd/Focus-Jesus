@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../app/providers.dart';
 import '../../app/router.dart';
+import '../../core/design/motion.dart';
 import '../../core/design/tokens.dart';
 import '../../core/design/widgets.dart';
 import '../../core/time/clock.dart';
@@ -66,49 +67,77 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: FjSpace.xl),
-                Text('여정', style: t.displayTitle),
-                const SizedBox(height: FjSpace.s),
-                Text(
-                  count == 0
-                      ? '이번 달의 기록이 여기에 차곡차곡 쌓입니다.'
-                      : '이번 달에 $days일, $count편의 이야기를 읽었습니다.',
-                  style: t.meta,
-                  key: const ValueKey('journey-summary'),
+                const FjScreenTitle(en: 'JOURNEY', title: '여정'),
+                const SizedBox(height: FjSpace.m),
+                Reveal(
+                  delay: FjMotion.stagger * 3,
+                  child: Text(
+                    count == 0
+                        ? '이번 달의 기록이 여기에 차곡차곡 쌓입니다.'
+                        : '이번 달에 $days일, $count편의 이야기를 읽었습니다.',
+                    style: t.meta,
+                    key: const ValueKey('journey-summary'),
+                  ),
                 ),
                 const SizedBox(height: FjSpace.xl),
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    IconButton(
-                      key: const ValueKey('journey-prev-month'),
-                      tooltip: '이전 달',
-                      onPressed: () => _shiftMonth(-1),
-                      icon: const Icon(Icons.chevron_left),
+                    KeyedSubtree(
+                      key: ValueKey('month-$_year-$_month'),
+                      child: MaskRise(
+                        child: ExcludeSemantics(
+                          child: MediaQuery.withClampedTextScaling(
+                            maxScaleFactor: 1.2,
+                            child: Text(
+                              '$_month'.padLeft(2, '0'),
+                              style: t.numeral.copyWith(fontSize: 72),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
+                    const SizedBox(width: FjSpace.m),
                     Expanded(
-                      child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
                         child: Text(
                           '$_year년 $_month월',
-                          style: t.uiStrong,
+                          style: t.meta,
                           key: const ValueKey('journey-month'),
                         ),
                       ),
                     ),
                     IconButton(
+                      key: const ValueKey('journey-prev-month'),
+                      tooltip: '이전 달',
+                      onPressed: () => _shiftMonth(-1),
+                      icon: const Icon(Icons.west, size: 20),
+                    ),
+                    IconButton(
                       key: const ValueKey('journey-next-month'),
                       tooltip: '다음 달',
                       onPressed: () => _shiftMonth(1),
-                      icon: const Icon(Icons.chevron_right),
+                      icon: const Icon(Icons.east, size: 20),
                     ),
                   ],
                 ),
                 const SizedBox(height: FjSpace.s),
-                MonthCalendar(
-                  year: _year,
-                  month: _month,
-                  today: today,
-                  selected: selected,
-                  chapterCountOn: (d) => journey.chaptersOn(d).length,
-                  onSelect: (d) => setState(() => _selected = d),
+                const Hairline(strong: true),
+                const SizedBox(height: FjSpace.m),
+                KeyedSubtree(
+                  key: ValueKey('calendar-$_year-$_month'),
+                  child: Reveal(
+                    offset: 10,
+                    child: MonthCalendar(
+                      year: _year,
+                      month: _month,
+                      today: today,
+                      selected: selected,
+                      chapterCountOn: (d) => journey.chaptersOn(d).length,
+                      onSelect: (d) => setState(() => _selected = d),
+                    ),
+                  ),
                 ),
                 if (selected != null) ...[
                   const SizedBox(height: FjSpace.l),
@@ -134,45 +163,83 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                         ),
                 ],
                 const SizedBox(height: FjSpace.xxl),
-                const Hairline(),
+                const DrawnRule(onScreen: true),
                 const SizedBox(height: FjSpace.xl),
-                const FjLabel('첫 번째 여정 · 일곱 날의 이야기'),
+                const Reveal(
+                  onScreen: true,
+                  child: FjDualLabel('SEASON ONE', '첫 번째 여정 · 일곱 날의 이야기'),
+                ),
                 const SizedBox(height: FjSpace.s),
-                for (final ch in season.chapters)
-                  InkWell(
-                    key: ValueKey('journey-chapter-${ch.id}'),
-                    onTap: () => context.push(Routes.read(ch.id)),
-                    child: Container(
-                      constraints: const BoxConstraints(minHeight: 64),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      decoration: BoxDecoration(
-                        border: Border(bottom: BorderSide(color: c.divider)),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(
-                            width: 64,
-                            child: Text(ch.dayLabel, style: t.label),
+                for (final (i, ch) in season.chapters.indexed)
+                  Reveal(
+                    onScreen: true,
+                    delay: FjMotion.stagger * i,
+                    child: InkWell(
+                      key: ValueKey('journey-chapter-${ch.id}'),
+                      onTap: () => context.push(Routes.read(ch.id)),
+                      child: Container(
+                        constraints: const BoxConstraints(minHeight: 72),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(color: c.divider, width: 0.8),
                           ),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(ch.title, style: t.ui),
-                                const SizedBox(height: 2),
-                                Text(
-                                  _chapterStatus(journey, plan, ch.id),
-                                  style: t.meta.copyWith(
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              width: 56,
+                              child: Semantics(
+                                label: ch.dayLabel,
+                                excludeSemantics: true,
+                                child: Text(
+                                  '${ch.day}'.padLeft(2, '0'),
+                                  style: t.numeral.copyWith(
+                                    fontSize: 30,
+                                    letterSpacing: 0,
                                     color: journey.isCompleted(ch.id)
-                                        ? c.accent
-                                        : c.textSecondary,
+                                        ? c.textPrimary
+                                        : c.rule,
                                   ),
                                 ),
-                              ],
+                              ),
                             ),
-                          ),
-                        ],
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    ch.title,
+                                    style: t.uiStrong.copyWith(
+                                      fontWeight: journey.isCompleted(ch.id)
+                                          ? FontWeight.w600
+                                          : FontWeight.w400,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    _chapterStatus(journey, plan, ch.id),
+                                    style: t.meta.copyWith(
+                                      color: journey.isCompleted(ch.id)
+                                          ? c.textPrimary
+                                          : c.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            ExcludeSemantics(
+                              child: Text(
+                                '→',
+                                style: t.latinItalic.copyWith(
+                                  fontStyle: FontStyle.normal,
+                                  color: c.textSecondary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

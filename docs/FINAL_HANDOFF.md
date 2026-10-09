@@ -65,6 +65,11 @@ versionCode 2001(ABI 분할 시 Flutter가 자동으로 1000×ABI를 더함), �
 `app-arm64-v8a-release.apk`, 26,125,178 bytes, SHA-256 `0f260fba721d2f26a46a2683b74e7e7b87932cd05604d35ca61dec8388f1744c`,
 versionName 1.0.1 / versionCode 2002, 1.0.0과 같은 디버그 키(인증서 SHA-256 `540ff875…3ec15677`)로 서명 → 기존 설치 위에 업데이트 설치되며 데이터 유지.
 
+**1.1.0 (2026-10-09, 디자인 v2 "Ink & Paper · Motion Editorial")** — 1.0.x 기록과 APK는 롤백용으로 보존.
+`app-arm64-v8a-release.apk`, 26,319,014 bytes, SHA-256 `7155de00fa6e4c6ed530a27394fd1f4f0ec205a0521ae3a277d575b247ae89ff`,
+versionName 1.1.0 / versionCode 2003, 같은 디버그 키 → 1.0.x 위에 업데이트 설치되며 데이터 유지.
+같은 커밋의 범용 APK(`scripts/verify.sh`): 66,879,984 bytes, SHA-256 `776cbb0a608dcf0e7b0f842682e7d6a0baadc973ce9dc0d85685b01cd65553fd`.
+
 ## 5. 자동 테스트 실행 결과
 
 `scripts/verify.sh` 최종 실행: **exit 0** (5분 28초) — 포맷 무변경, `flutter analyze` 무오류, `flutter test` **93개 통과**, 콘텐츠 검증 OK, Release APK 빌드.
@@ -100,7 +105,7 @@ versionName 1.0.1 / versionCode 2002, 1.0.0과 같은 디버그 키(인증서 SH
   3. `flutter test integration_test/app_test.dart -d <기기>` → `flutter test integration_test/app_restart_test.dart -d <기기>`
   4. 수동 확인: 알림 권한 팝업, 알림 수신(설정 시간 1–2분 뒤로), 재부팅 후 알림, 외부 성경 링크, 시스템 글꼴 크게.
 
-## 7. 주요 스크린샷 (`docs/screenshots/`, 실제 폰트 렌더링)
+## 7. 주요 스크린샷 (`docs/screenshots/`, 실제 폰트 렌더링 — v2. 모션 프레임은 `motion/`, 이전 디자인은 `v1/`)
 
 | 파일 | 화면 |
 |---|---|

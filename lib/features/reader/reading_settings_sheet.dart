@@ -31,7 +31,7 @@ class _ReadingSettingsSheet extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const FjLabel('읽기 시간'),
+                const FjDualLabel('TIME', '읽기 시간'),
                 const SizedBox(height: FjSpace.s),
                 Row(
                   children: [
@@ -54,7 +54,7 @@ class _ReadingSettingsSheet extends ConsumerWidget {
                                     color: settings.minutes == m
                                         ? c.accent
                                         : c.divider,
-                                    width: settings.minutes == m ? 2 : 1,
+                                    width: settings.minutes == m ? 1.5 : 0.8,
                                   ),
                                 ),
                               ),
@@ -75,7 +75,7 @@ class _ReadingSettingsSheet extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: FjSpace.xl),
-                const FjLabel('이해 수준'),
+                const FjDualLabel('LEVEL', '이해 수준'),
                 for (final level in ReadingLevel.values)
                   FjOptionTile(
                     key: ValueKey('sheet-level-${level.id}'),

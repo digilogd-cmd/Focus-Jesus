@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Generates the launcher icons from the brand tokens.
 
-Design: a serif "FJ" monogram in paper white on the brand accent green, with a
-short hairline beneath — the same quiet editorial language as the app.
+Design (v2 "Ink & Paper"): a Cormorant Garamond "FJ" monogram in paper on ink,
+with a short hairline beneath — the same type-first language as the app.
+v1 used Noto Serif KR on accent green (#365B4C) with paper #F8F7F3.
 
 Usage: python3 tool/generate_icons.py   (requires Pillow)
 """
@@ -11,9 +12,9 @@ import os
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT = os.path.join(os.path.dirname(__file__), '..')
-FONT = os.path.join(ROOT, 'assets', 'fonts', 'NotoSerifKR-SemiBold.ttf')
-ACCENT = (0x36, 0x5B, 0x4C, 255)
-PAPER = (0xF8, 0xF7, 0xF3, 255)
+FONT = os.path.join(ROOT, 'assets', 'fonts', 'CormorantGaramond-SemiBold.ttf')
+ACCENT = (0x17, 0x17, 0x14, 255)  # ink
+PAPER = (0xF4, 0xF0, 0xE7, 255)
 RES = os.path.join(ROOT, 'android', 'app', 'src', 'main', 'res')
 
 LEGACY = {'mdpi': 48, 'hdpi': 72, 'xhdpi': 96, 'xxhdpi': 144, 'xxxhdpi': 192}
@@ -24,7 +25,7 @@ def draw_monogram(size, glyph_box, background):
     """Draws "FJ" plus a hairline, optically centred inside [glyph_box] px."""
     img = Image.new('RGBA', (size, size), background)
     d = ImageDraw.Draw(img)
-    font = ImageFont.truetype(FONT, int(glyph_box * 0.40))
+    font = ImageFont.truetype(FONT, int(glyph_box * 0.46))
     text = 'FJ'
     tracking = glyph_box * 0.015
     widths = [d.textlength(ch, font=font) for ch in text]

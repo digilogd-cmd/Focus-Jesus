@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/providers.dart';
 import '../../app/router.dart';
+import '../../core/design/editorial.dart';
+import '../../core/design/motion.dart';
 import '../../core/design/tokens.dart';
 import '../../core/design/widgets.dart';
 import '../../core/design/korean_text.dart';
@@ -24,12 +26,23 @@ class SeasonCompleteScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: FjSpace.xxl),
-                const Wordmark(size: 15),
+                const Wordmark(size: 17, animate: true),
+                const SizedBox(height: FjSpace.m),
+                const DrawnRule(),
                 const SizedBox(height: FjSpace.xxl),
-                Text(
+                const Reveal(child: FjDualLabel('SEASON ONE', '첫 번째 여정')),
+                const SizedBox(height: FjSpace.s),
+                DayNumeral(
+                  day: season.chapters.length,
+                  of: season.chapters.length,
+                  delay: FjMotion.stagger * 2,
+                ),
+                const SizedBox(height: FjSpace.l),
+                InkText(
                   '첫 번째 여정을 마쳤습니다',
-                  style: t.displayTitle,
                   key: const ValueKey('season-complete-title'),
+                  style: t.displayTitle,
+                  delay: FjMotion.stagger * 5,
                 ),
                 const SizedBox(height: FjSpace.l),
                 Text(
@@ -48,20 +61,27 @@ class SeasonCompleteScreen extends ConsumerWidget {
                   style: t.body,
                 ),
                 const SizedBox(height: FjSpace.xl),
-                const Hairline(width: 40),
+                const DrawnRule(onScreen: true),
                 const SizedBox(height: FjSpace.xl),
-                const FjLabel('지나온 이야기'),
+                const FjDualLabel('LOOKING BACK', '지나온 이야기'),
                 const SizedBox(height: FjSpace.m),
-                for (final ch in season.chapters)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: FjSpace.m),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('${ch.dayLabel}  ${ch.title}', style: t.uiStrong),
-                        const SizedBox(height: 2),
-                        Text(keepAll(ch.keyMessage), style: t.meta),
-                      ],
+                for (final (i, ch) in season.chapters.indexed)
+                  Reveal(
+                    onScreen: true,
+                    delay: FjMotion.stagger * i,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: FjSpace.m),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${ch.dayLabel}  ${ch.title}',
+                            style: t.uiStrong,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(keepAll(ch.keyMessage), style: t.meta),
+                        ],
+                      ),
                     ),
                   ),
                 const SizedBox(height: FjSpace.l),

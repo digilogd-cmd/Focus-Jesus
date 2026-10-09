@@ -27,6 +27,10 @@
   라이선스 전문: `assets/licenses/` (앱의 오픈소스 라이선스 화면에도 표시).
 - 성경 데이터: 66권 장·절 수 표(KJV 체계, 1,189장 / 31,102절)를 `tool/generate_bible_books.py`로 생성 → `lib/core/bible/bible_books.g.dart`.
   외부 링크: 대한성서공회 개역개정 읽기 페이지(`bskorea.or.kr`), 66권 코드 중 15권 샘플을 실제 요청으로 확인.
+  → 2026-10 변경: 실기기에서 기존 페이지가 데스크톱 고정폭(화면 잘림)으로 확인되어 모바일 최적화된
+  대한성서공회 성경플랫폼(`bible.bskorea.or.kr/bible/NKRV/…`)으로 교체. 기존 주소는 `legacyExternalUri`로 보존.
+  66권 코드 전부와 원고의 참조 70개를 `tool/check_bible_links.dart`로 실제 요청해 페이지 제목까지 일치 확인.
+  플랫폼은 장을 넘는 범위(예: 창 6:1–9:17)를 지원하지 않아 첫 절에서 열림(다음 장 버튼으로 이어 읽기).
 - 테스트(실행 결과):
   - `flutter doctor -v`: Flutter ✓, Android toolchain ✓ (licenses accepted). Chrome ✗(웹 미사용), Linux toolchain은 GTK 설치 후 테스트용으로 사용.
   - `flutter pub get`: 성공.

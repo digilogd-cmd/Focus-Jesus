@@ -307,8 +307,21 @@ void main() {
       }
     });
 
-    test('external link points to the first verse on bskorea', () {
-      final uri = BibleReference.parse('GAL 3:6-16').externalUri;
+    test('external link opens the passage on the mobile bible platform', () {
+      String link(String ref) =>
+          BibleReference.parse(ref).externalUri.toString();
+      const base = 'https://bible.bskorea.or.kr/bible/NKRV';
+      expect(link('GAL 3:6-16'), '$base/GAL.3.6-GAL.3.16');
+      expect(link('GAL 3:16'), '$base/GAL.3.16');
+      expect(link('GEN 3'), '$base/GEN.3');
+      expect(link('1JN 3:8'), '$base/1JN.3.8');
+      // Cross-chapter ranges are not supported by the platform: open at the
+      // first verse.
+      expect(link('GEN 6:1-9:17'), '$base/GEN.6.1');
+    });
+
+    test('legacy desktop link is kept for rollback', () {
+      final uri = BibleReference.parse('GAL 3:6-16').legacyExternalUri;
       expect(uri.host, 'www.bskorea.or.kr');
       expect(uri.queryParameters, {
         'version': 'GAE',

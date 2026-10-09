@@ -240,7 +240,10 @@ void main() {
       await tester.tap(link);
       await tester.pump();
       expect(find.textContaining('본문을 열 수 없습니다'), findsOneWidget);
-      expect(app.links.opened.single.queryParameters['book'], 'gen');
+      expect(
+        app.links.opened.single.toString(),
+        'https://bible.bskorea.or.kr/bible/NKRV/GEN.1.1',
+      );
     });
 
     testWidgets('external link success opens bskorea at the right verse', (
@@ -255,7 +258,7 @@ void main() {
       await tester.pump();
       expect(
         app.links.opened.single.toString(),
-        'https://www.bskorea.or.kr/bible/korbibReadpage.php?version=GAE&book=jhn&chap=1&sec=1',
+        'https://bible.bskorea.or.kr/bible/NKRV/JHN.1.1-JHN.1.5',
       );
       expect(find.textContaining('본문을 열 수 없습니다'), findsNothing);
     });

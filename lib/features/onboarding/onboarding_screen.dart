@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/providers.dart';
+import '../../core/design/motion.dart';
 import '../../core/design/tokens.dart';
 import '../../core/design/widgets.dart';
 import '../../data/models/reading_preferences.dart';
@@ -101,17 +102,40 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     Semantics(
                       label: '${_step + 1}/$_stepCount 단계',
                       excludeSemantics: true,
-                      child: Row(
-                        children: [
-                          for (var i = 0; i < _stepCount; i++)
-                            AnimatedContainer(
-                              duration: duration,
-                              margin: const EdgeInsets.only(left: 6),
-                              width: i == _step ? 18 : 6,
-                              height: 2,
-                              color: i <= _step ? c.accent : c.divider,
+                      child: MediaQuery.withClampedTextScaling(
+                        maxScaleFactor: 1.3,
+                        child: Row(
+                          children: [
+                            KeyedSubtree(
+                              key: ValueKey('step-$_step'),
+                              child: MaskRise(
+                                duration: const Duration(milliseconds: 600),
+                                child: Text(
+                                  '${_step + 1}'.padLeft(2, '0'),
+                                  style: t.latinItalic.copyWith(
+                                    fontStyle: FontStyle.normal,
+                                    fontSize: 17,
+                                    color: c.textPrimary,
+                                  ),
+                                ),
+                              ),
                             ),
-                        ],
+                            Text(
+                              ' / ${'$_stepCount'.padLeft(2, '0')}',
+                              style: t.latinItalic.copyWith(fontSize: 17),
+                            ),
+                            const SizedBox(width: 12),
+                            for (var i = 0; i < _stepCount; i++)
+                              AnimatedContainer(
+                                duration: duration,
+                                curve: FjMotion.emphasized,
+                                margin: const EdgeInsets.only(left: 4),
+                                width: i == _step ? 22 : 8,
+                                height: 1.5,
+                                color: i <= _step ? c.textPrimary : c.divider,
+                              ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -139,22 +163,46 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       footer: FjPrimaryButton(label: '시작하기', onPressed: _next),
       children: [
         const SizedBox(height: FjSpace.xl),
-        const Wordmark(),
-        const SizedBox(height: FjSpace.m),
-        Text('모든 이야기는 그리스도께로', style: FjText.of(context).subtitle),
-        const SizedBox(height: FjSpace.xxl),
-        Text(
-          keepAll('성경은 흩어진 이야기의 모음이 아니라, 하나의 큰 이야기입니다.'),
-          style: FjText.of(context).heading,
+        const DrawnRule(
+          vertical: true,
+          length: 64,
+          thickness: 1,
+          duration: Duration(milliseconds: 900),
         ),
         const SizedBox(height: FjSpace.l),
-        Text(
-          keepAll(
-            '하루에 한 편, 이해하기 쉬운 해설로 성경의 흐름을 따라갑니다. '
-            '이야기를 읽은 뒤에는 실제 성경 본문을 직접 펼쳐 보도록 안내해 드립니다. '
-            '서두르지 않아도 괜찮습니다. 놓친 날이 있으면 그다음 날 이어서 읽으면 됩니다.',
+        const Wordmark(size: 26, animate: true),
+        const SizedBox(height: FjSpace.m),
+        Reveal(
+          delay: const Duration(milliseconds: 700),
+          child: Text(
+            'Every story whispers His name',
+            style: FjText.of(context).latinItalic,
           ),
-          style: FjText.of(context).body,
+        ),
+        const SizedBox(height: FjSpace.xs),
+        Reveal(
+          delay: const Duration(milliseconds: 820),
+          child: Text('모든 이야기는 그리스도께로', style: FjText.of(context).subtitle),
+        ),
+        const SizedBox(height: FjSpace.xxl),
+        const DrawnRule(delay: Duration(milliseconds: 900)),
+        const SizedBox(height: FjSpace.xl),
+        InkText(
+          keepAll('성경은 흩어진 이야기의 모음이 아니라, 하나의 큰 이야기입니다.'),
+          style: FjText.of(context).heading.copyWith(fontSize: 23),
+          delay: const Duration(milliseconds: 1000),
+        ),
+        const SizedBox(height: FjSpace.l),
+        Reveal(
+          delay: const Duration(milliseconds: 1500),
+          child: Text(
+            keepAll(
+              '하루에 한 편, 이해하기 쉬운 해설로 성경의 흐름을 따라갑니다. '
+              '이야기를 읽은 뒤에는 실제 성경 본문을 직접 펼쳐 보도록 안내해 드립니다. '
+              '서두르지 않아도 괜찮습니다. 놓친 날이 있으면 그다음 날 이어서 읽으면 됩니다.',
+            ),
+            style: FjText.of(context).body,
+          ),
         ),
       ],
     ),
@@ -266,9 +314,14 @@ class _StepTitle extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(keepAll(title), style: t.chapterTitle),
+          InkText(keepAll(title), style: t.chapterTitle),
           const SizedBox(height: FjSpace.m),
-          Text(keepAll(lead), style: t.subtitle),
+          Reveal(
+            delay: const Duration(milliseconds: 300),
+            child: Text(keepAll(lead), style: t.subtitle),
+          ),
+          const SizedBox(height: FjSpace.l),
+          const DrawnRule(delay: Duration(milliseconds: 360)),
         ],
       ),
     );

@@ -74,6 +74,12 @@ Future<void> loadAppFonts() async {
     'Pretendard-Medium.otf',
     'Pretendard-SemiBold.otf',
   ]);
+  await load('CormorantGaramond', [
+    'CormorantGaramond-Regular.ttf',
+    'CormorantGaramond-Medium.ttf',
+    'CormorantGaramond-SemiBold.ttf',
+    'CormorantGaramond-Italic.ttf',
+  ]);
   // Material icons for back/chevron glyphs.
   final iconFont = File(
     '${Platform.environment['FLUTTER_ROOT'] ?? '/opt/sdk/flutter'}/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',

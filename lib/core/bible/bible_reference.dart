@@ -142,8 +142,30 @@ class BibleReference {
     return '$name $startChapter:$startVerse–$endChapter:$endVerse';
   }
 
-  /// External reading page (대한성서공회 개역개정) opened at the first verse.
-  Uri get externalUri => Uri.https(
+  /// External reading page (대한성서공회 성경플랫폼, 개역개정) for this
+  /// passage. The platform is built for phones; the older
+  /// [legacyExternalUri] page is a fixed-width desktop layout.
+  ///
+  /// The platform only understands ranges inside one chapter (verified
+  /// 2026-10: `GEN.6.1-GEN.9.17` opens at 6:1 only), so a range that crosses
+  /// chapters opens at its first verse and the reader moves on with the
+  /// page's next-chapter button.
+  Uri get externalUri {
+    final code = book.code;
+    final c = startChapter;
+    final String path;
+    if (startVerse == null) {
+      path = '$code.$c';
+    } else if (endChapter != startChapter || endVerse == startVerse) {
+      path = '$code.$c.$startVerse';
+    } else {
+      path = '$code.$c.$startVerse-$code.$c.$endVerse';
+    }
+    return Uri.https('bible.bskorea.or.kr', '/bible/NKRV/$path');
+  }
+
+  /// Previous link target (desktop 대한성서공회 읽기 페이지), kept for rollback.
+  Uri get legacyExternalUri => Uri.https(
     'www.bskorea.or.kr',
     '/bible/korbibReadpage.php',
     <String, String>{

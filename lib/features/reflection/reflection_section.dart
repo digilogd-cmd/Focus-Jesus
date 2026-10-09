@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/providers.dart';
+import '../../core/design/motion.dart';
 import '../../core/design/tokens.dart';
 import '../../core/design/widgets.dart';
 import '../../core/time/clock.dart';
@@ -99,20 +100,42 @@ class ReflectionSectionState extends ConsumerState<ReflectionSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const FjLabel('묵상'),
+          const DrawnRule(onScreen: true),
+          const SizedBox(height: FjSpace.xl),
+          const Reveal(onScreen: true, child: FjDualLabel('REFLECT', '묵상')),
           const SizedBox(height: FjSpace.s),
-          Text('답을 적지 않아도 괜찮습니다. 적은 메모는 이 기기에만 저장됩니다.', style: t.meta),
+          Reveal(
+            onScreen: true,
+            child: Text(
+              keepAll('답을 적지 않아도 괜찮습니다. 적은 메모는 이 기기에만 저장됩니다.'),
+              style: t.meta,
+            ),
+          ),
           for (var i = 0; i < questions.length; i++)
             Padding(
               padding: const EdgeInsets.only(top: FjSpace.xl),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('${i + 1}', style: t.noteLabel),
-                  const SizedBox(height: FjSpace.xs),
-                  Text(
-                    keepAll(questions[i]),
-                    style: t.body.copyWith(fontWeight: FontWeight.w600),
+                  MaskRise(
+                    onScreen: true,
+                    child: ExcludeSemantics(
+                      child: Text(
+                        '${i + 1}'.padLeft(2, '0'),
+                        style: t.numeral.copyWith(
+                          fontSize: 34,
+                          letterSpacing: 0,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: FjSpace.s),
+                  Reveal(
+                    onScreen: true,
+                    child: Text(
+                      keepAll(questions[i]),
+                      style: t.body.copyWith(fontWeight: FontWeight.w600),
+                    ),
                   ),
                   TextField(
                     key: ValueKey('reflection-note-$i'),

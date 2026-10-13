@@ -499,10 +499,34 @@ void main() {
         await tester.pumpAndSettle();
         await tester.tap(find.byType(Switch));
         await tester.pumpAndSettle();
+        // The OS refused: explain and offer the system settings page.
+        expect(find.text('알림을 허용해 주세요'), findsOneWidget);
+        await tester.tap(byKey('open-notification-settings'));
+        await tester.pumpAndSettle();
+        expect(app.scheduler.settingsOpened, 1);
         expect(app.container.read(settingsProvider).reminder.enabled, isFalse);
-        expect(find.textContaining('알림 권한이 꺼져 있습니다'), findsOneWidget);
       },
     );
+
+    testWidgets('test notification row sends one and confirms', (tester) async {
+      usePhoneSize(tester);
+      final app = await pumpApp(
+        tester,
+        settings: onboarded().copyWith(
+          reminder: const ReminderPreference(
+            enabled: true,
+            hour: 7,
+            minute: 30,
+          ),
+        ),
+      );
+      await tester.tap(byKey('nav-2'));
+      await tester.pumpAndSettle();
+      await tester.tap(byKey('settings-reminder-test'));
+      await tester.pumpAndSettle();
+      expect(app.scheduler.testNotifications, 1);
+      expect(find.textContaining('테스트 알림을 보냈습니다'), findsOneWidget);
+    });
   });
 
   group('layout robustness', () {

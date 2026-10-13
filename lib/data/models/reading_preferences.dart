@@ -32,7 +32,13 @@ enum ReadingLevel {
 }
 
 /// 하루 독서 시간 (target, not a guarantee).
+///
+/// 5–20 minutes are cumulative tiers of one manuscript. 1 and 3 minutes are
+/// "brief" modes with their own condensed text (`briefs` in the chapter JSON),
+/// because cutting the tiered manuscript shorter would break the story.
 enum ReadingMinutes {
+  one(1),
+  three(3),
   five(5),
   ten(10),
   fifteen(15),
@@ -42,9 +48,19 @@ enum ReadingMinutes {
 
   final int minutes;
 
+  /// Cumulative section tiers of the main manuscript, shortest first.
+  static const List<ReadingMinutes> tiers = [five, ten, fifteen, twenty];
+
+  /// Modes read from the chapter's condensed `briefs`.
+  static const List<ReadingMinutes> briefs = [one, three];
+
   String get label => '$minutes분';
 
-  bool includes(ReadingMinutes tier) => tier.minutes <= minutes;
+  bool get isBrief => minutes < 5;
+
+  /// Whether a main-manuscript section of [tier] is read in this mode.
+  /// Brief modes read no tiered sections.
+  bool includes(ReadingMinutes tier) => !isBrief && tier.minutes <= minutes;
 
   static ReadingMinutes fromMinutes(int? minutes) => values.firstWhere(
     (m) => m.minutes == minutes,

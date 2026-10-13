@@ -13,6 +13,7 @@ import '../../data/content/chapter.dart';
 import '../../data/content/chapter_composer.dart';
 import '../../data/journey/journey.dart';
 import '../../core/design/korean_text.dart';
+import '../settings/reminder_access.dart';
 
 class TodayScreen extends ConsumerWidget {
   const TodayScreen({super.key});
@@ -144,7 +145,7 @@ class TodayScreen extends ConsumerWidget {
           const Reveal(child: FjDualLabel('SEASON ONE', '첫 번째 여정')),
           const SizedBox(height: FjSpace.m),
           InkText(
-            '일곱 날의 이야기를 모두 읽었습니다.',
+            '${season.chapters.length}일의 이야기를 모두 읽었습니다.',
             key: const ValueKey('today-season-complete'),
             style: t.displayTitle,
             delay: step * 2,
@@ -154,8 +155,11 @@ class TodayScreen extends ConsumerWidget {
             delay: step * 6,
             child: Text(
               keepAll(
-                '창조에서 아브라함의 부르심까지, 하나님이 사람을 포기하지 않으신 이야기를 따라왔습니다. '
-                '지난 이야기는 언제든 여정에서 다시 펼쳐 볼 수 있습니다.',
+                season.isComplete
+                    ? '창조에서 새 창조까지, 하나님이 사람을 포기하지 않으시고 그리스도 안에서 약속을 이루어 가시는 '
+                          '이야기를 따라왔습니다. 지난 이야기는 언제든 여정에서 다시 펼쳐 볼 수 있습니다.'
+                    : '지금까지 준비된 이야기를 모두 읽었습니다. 남은 이야기는 정성껏 준비하고 있으며, '
+                          '지난 이야기는 언제든 여정에서 다시 펼쳐 볼 수 있습니다.',
               ),
               style: t.body,
             ),
@@ -195,6 +199,7 @@ class TodayScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: FjSpace.xl),
                 ...body,
+                const ReminderNotice(padding: EdgeInsets.only(top: FjSpace.xl)),
                 const SizedBox(height: FjSpace.xxl),
                 SeasonProgress(
                   total: plan.totalCount,

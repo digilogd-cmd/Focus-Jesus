@@ -6,20 +6,6 @@ import 'package:focus_jesus/data/models/user_settings.dart';
 
 import '../helpers/test_app.dart';
 
-Future<void> resumeApp(WidgetTester tester) async {
-  for (final state in [
-    AppLifecycleState.inactive,
-    AppLifecycleState.hidden,
-    AppLifecycleState.paused,
-    AppLifecycleState.hidden,
-    AppLifecycleState.inactive,
-    AppLifecycleState.resumed,
-  ]) {
-    tester.binding.handleAppLifecycleStateChanged(state);
-  }
-  await tester.pumpAndSettle();
-}
-
 void main() {
   const reminderOn = ReminderPreference(enabled: true, hour: 21, minute: 0);
 

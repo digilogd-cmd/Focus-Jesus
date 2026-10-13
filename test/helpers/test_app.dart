@@ -183,3 +183,19 @@ void usePhoneSize(
   tester.view.devicePixelRatio = dpr;
   addTearDown(tester.view.reset);
 }
+
+/// Drives the lifecycle through background → foreground, like a user
+/// switching away and coming back.
+Future<void> resumeApp(WidgetTester tester) async {
+  for (final state in [
+    AppLifecycleState.inactive,
+    AppLifecycleState.hidden,
+    AppLifecycleState.paused,
+    AppLifecycleState.hidden,
+    AppLifecycleState.inactive,
+    AppLifecycleState.resumed,
+  ]) {
+    tester.binding.handleAppLifecycleStateChanged(state);
+  }
+  await tester.pumpAndSettle();
+}

@@ -165,9 +165,12 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                 const SizedBox(height: FjSpace.xxl),
                 const DrawnRule(onScreen: true),
                 const SizedBox(height: FjSpace.xl),
-                const Reveal(
+                Reveal(
                   onScreen: true,
-                  child: FjDualLabel('SEASON ONE', '첫 번째 여정 · 일곱 날의 이야기'),
+                  child: FjDualLabel(
+                    'SEASON ONE',
+                    '첫 번째 여정 · ${season.curriculum.days.length}일의 이야기',
+                  ),
                 ),
                 const SizedBox(height: FjSpace.s),
                 for (final (i, ch) in season.chapters.indexed)
@@ -243,11 +246,13 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                       ),
                     ),
                   ),
-                const SizedBox(height: FjSpace.l),
-                Text(
-                  '30일 과정 가운데 나머지 ${season.plannedDayCount}일의 이야기는 정성껏 준비하고 있습니다.',
-                  style: t.meta,
-                ),
+                if (!season.isComplete) ...[
+                  const SizedBox(height: FjSpace.l),
+                  Text(
+                    '${season.curriculum.days.length}일 과정 가운데 나머지 ${season.plannedDayCount}일의 이야기는 정성껏 준비하고 있습니다.',
+                    style: t.meta,
+                  ),
+                ],
                 const SizedBox(height: FjSpace.xl),
               ],
             ),

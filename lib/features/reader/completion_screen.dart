@@ -87,7 +87,7 @@ class CompletionScreen extends ConsumerWidget {
                         child: Text(
                           keepAll(
                             seasonDone
-                                ? '일곱 날의 이야기를 모두 마쳤습니다. 천천히 돌아보며 마음에 남은 이야기를 다시 펼쳐 보세요.'
+                                ? '${season.chapters.length}일의 이야기를 모두 마쳤습니다. 천천히 돌아보며 마음에 남은 이야기를 다시 펼쳐 보세요.'
                                 : '오늘 읽은 기록은 여정에 남았습니다. 조금 더 읽고 싶다면 다음 이야기로 이어 가도 좋습니다.',
                           ),
                           style: t.subtitle,

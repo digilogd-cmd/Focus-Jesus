@@ -37,7 +37,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     var enabled = withReminder;
     final coordinator = ref.read(reminderCoordinatorProvider);
     if (withReminder) {
-      final granted = await coordinator.requestPermission();
+      final granted = await coordinator.ensurePermission();
       if (!granted) {
         enabled = false;
         if (mounted) {
@@ -293,6 +293,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   };
 
   static String _minutesDescription(ReadingMinutes m) => switch (m) {
+    ReadingMinutes.one => '한 장면과 오늘의 핵심 한 문장',
+    ReadingMinutes.three => '이야기의 줄기와 그리스도와의 연결을 짧게',
     ReadingMinutes.five => '핵심 이야기와 그리스도와의 연결',
     ReadingMinutes.ten => '이야기의 흐름과 맥락까지',
     ReadingMinutes.fifteen => '역사와 문학적 배경까지',

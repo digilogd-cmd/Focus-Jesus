@@ -136,12 +136,12 @@ void main() {
   });
 
   group('reading time composition', () {
-    test('longer modes add content and keep the same core in order', () {
+    test('longer tiered modes add content and keep the same core in order', () {
       for (final c in season.chapters) {
         for (final level in ReadingLevel.values) {
           var previous = <String>[];
           var previousChars = 0;
-          for (final m in ReadingMinutes.values) {
+          for (final m in ReadingMinutes.tiers) {
             final composed = composeChapter(c, minutes: m, level: level);
             final ids = composed.sections.map((s) => s.section.id).toList();
             expect(
@@ -160,9 +160,9 @@ void main() {
       }
     });
 
-    test('every mode starts with the opening, ends with today, includes Christ and Scripture', () {
+    test('every tiered mode starts with the opening, ends with today, includes Christ and Scripture', () {
       for (final c in season.chapters) {
-        for (final m in ReadingMinutes.values) {
+        for (final m in ReadingMinutes.tiers) {
           final sections = composeChapter(
             c,
             minutes: m,
@@ -197,7 +197,10 @@ void main() {
               est,
               inInclusiveRange(
                 m.minutes * kMinTimeRatio,
-                m.minutes * kMaxTimeRatio,
+                m.minutes *
+                    (m == ReadingMinutes.one
+                        ? kMaxTimeRatioOneMinute
+                        : kMaxTimeRatio),
               ),
               reason: '${c.id} ${m.label} ${level.label}',
             );

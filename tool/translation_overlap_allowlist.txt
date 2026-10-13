@@ -1,0 +1,7 @@
+# Fixed proper names that have no other natural Korean wording.
+# One Hangul string per line; spaces and punctuation are ignored.
+생명나무와 선악을 알게 하는 나무
+# Divine titles (fixed formulae used across Scripture and liturgy).
+아브라함과 이삭과 야곱의 하나님
+아브라함의 하나님 이삭의 하나님 야곱의 하나님
+아브라함과 이삭과 이스라엘의 하나님

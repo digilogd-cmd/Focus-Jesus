@@ -6,6 +6,7 @@ import '../../core/design/tokens.dart';
 import '../../core/design/widgets.dart';
 import '../../data/models/reading_preferences.dart';
 import '../../data/models/user_settings.dart';
+import 'reminder_access.dart';
 import 'reminder_time_picker.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -22,20 +23,9 @@ class SettingsScreen extends ConsumerWidget {
     Future<void> updateReminder(ReminderPreference next) async {
       var value = next;
       if (next.enabled && !s.reminder.enabled) {
-        final granted = await ref
-            .read(reminderCoordinatorProvider)
-            .requestPermission();
-        if (!granted) {
+        // Asks the OS; if it can no longer ask, offers the settings page.
+        if (!await allowNotifications(context, ref)) {
           value = next.copyWith(enabled: false);
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  '알림 권한이 꺼져 있습니다. 휴대전화 설정 > 애플리케이션에서 FOCUS JESUS의 알림을 허용해 주세요.',
-                ),
-              ),
-            );
-          }
         }
       }
       await controller.update((cur) => cur.copyWith(reminder: value));
@@ -123,6 +113,29 @@ class SettingsScreen extends ConsumerWidget {
                       }
                     },
                   ),
+                if (s.reminder.enabled)
+                  FjListRow(
+                    key: const ValueKey('settings-reminder-test'),
+                    title: '테스트 알림 보내기',
+                    subtitle: '지금 바로 알림 하나를 보내 도착하는지 확인합니다.',
+                    onTap: () async {
+                      final messenger = ScaffoldMessenger.of(context);
+                      if (!await allowNotifications(context, ref)) return;
+                      final sent = await ref
+                          .read(reminderCoordinatorProvider)
+                          .sendTestNotification();
+                      messenger.showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            sent
+                                ? '테스트 알림을 보냈습니다. 알림 창을 확인해 보세요.'
+                                : '이 기기에서 알림을 보내지 못했습니다.',
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                const ReminderNotice(padding: EdgeInsets.only(top: FjSpace.m)),
                 const SizedBox(height: FjSpace.xl),
                 const FjDualLabel('DISPLAY', '화면'),
                 FjListRow(

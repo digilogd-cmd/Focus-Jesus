@@ -168,6 +168,8 @@ class ReminderCoordinator {
 
   final Ref _ref;
 
+  ReminderScheduler get _scheduler => _ref.read(reminderSchedulerProvider);
+
   Future<ReminderPlan> sync() async {
     final settings = _ref.read(settingsProvider);
     final journey = await _ref.read(journeyProvider.future);
@@ -177,22 +179,76 @@ class ReminderCoordinator {
       preference: settings.reminder,
       finishedToday: journey.chaptersOn(LocalDate.of(now)).isNotEmpty,
     );
-    await _ref.read(reminderSchedulerProvider).apply(plan);
+    final scheduled = await _scheduler.apply(plan);
+    _ref.read(reminderScheduleOkProvider.notifier).set(scheduled);
     await _ref
         .read(settingsRepositoryProvider)
         .setScheduledTimeZone(
           plan.enabled ? _ref.read(timeZoneNameProvider) : null,
         );
+    _ref.invalidate(reminderHealthProvider);
     return plan;
   }
 
-  Future<bool> requestPermission() =>
-      _ref.read(reminderSchedulerProvider).requestPermission();
+  Future<bool> requestPermission() => _scheduler.requestPermission();
+
+  /// Makes sure the app may post notifications, asking the OS when needed.
+  /// Returns false when the user has to allow it in the system settings.
+  Future<bool> ensurePermission() async {
+    if (await _scheduler.notificationsEnabled()) return true;
+    final granted = await _scheduler.requestPermission();
+    // Some devices report the grant only through the status query.
+    final enabled = granted || await _scheduler.notificationsEnabled();
+    _ref.invalidate(reminderHealthProvider);
+    return enabled;
+  }
+
+  Future<bool> openSystemSettings() => _scheduler.openNotificationSettings();
+
+  Future<bool> sendTestNotification() => _scheduler.showTestNotification();
 }
 
 final reminderCoordinatorProvider = Provider<ReminderCoordinator>(
   ReminderCoordinator.new,
 );
+
+/// Whether the last attempt to schedule reminders succeeded.
+class ReminderScheduleOk extends Notifier<bool> {
+  @override
+  bool build() => true;
+
+  void set(bool value) => state = value;
+}
+
+final reminderScheduleOkProvider = NotifierProvider<ReminderScheduleOk, bool>(
+  ReminderScheduleOk.new,
+);
+
+/// What the reader needs to know about their daily reminder right now.
+enum ReminderHealth {
+  /// The reader has not asked for reminders.
+  off,
+
+  /// Reminders are on and can be delivered.
+  ok,
+
+  /// Reminders are on, but the OS does not allow this app to notify.
+  needsPermission,
+
+  /// Allowed, but scheduling failed on this device.
+  scheduleFailed,
+}
+
+final reminderHealthProvider = FutureProvider<ReminderHealth>((ref) async {
+  final enabled = ref.watch(settingsProvider.select((s) => s.reminder.enabled));
+  if (!enabled) return ReminderHealth.off;
+  final scheduledOk = ref.watch(reminderScheduleOkProvider);
+  final allowed = await ref
+      .read(reminderSchedulerProvider)
+      .notificationsEnabled();
+  if (!allowed) return ReminderHealth.needsPermission;
+  return scheduledOk ? ReminderHealth.ok : ReminderHealth.scheduleFailed;
+});
 
 // External links.
 

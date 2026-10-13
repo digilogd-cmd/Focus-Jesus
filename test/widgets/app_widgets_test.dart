@@ -126,7 +126,7 @@ void main() {
         expect(find.text('10월 6일 화요일'), findsOneWidget);
         expect(find.text(keepAll('세상은 왜 창조되었을까?')), findsOneWidget);
         expect(find.text('오늘의 이야기 읽기'), findsOneWidget);
-        expect(find.text('7개의 이야기가 준비되어 있습니다.'), findsOneWidget);
+        expect(find.text('30개의 이야기가 준비되어 있습니다.'), findsOneWidget);
         expect(
           find.textContaining('끊어'),
           findsNothing,
@@ -148,7 +148,7 @@ void main() {
         expect(byKey('today-read-more'), findsOneWidget);
         expect(find.text(keepAll('사람들은 왜 바벨탑을 세웠을까?')), findsNothing);
         expect(find.text(keepAll('인간은 왜 하나님을 떠났을까?')), findsOneWidget);
-        expect(find.text('7개의 이야기 중 1개를 읽었습니다.'), findsOneWidget);
+        expect(find.text('30개의 이야기 중 1개를 읽었습니다.'), findsOneWidget);
       },
     );
   });
@@ -400,14 +400,16 @@ void main() {
       expect(find.text('2026년 2월'), findsOneWidget);
     });
 
-    testWidgets('finishing all seven shows the season completion', (
+    testWidgets('finishing all thirty shows the season completion', (
       tester,
     ) async {
       usePhoneSize(tester);
       final app = await TestApp.create(settings: onboarded());
       addTearDown(app.dispose);
-      for (var d = 1; d <= 6; d++) {
-        await app.container.read(journeyProvider.notifier).complete('s1-d0$d');
+      for (var d = 1; d <= 29; d++) {
+        await app.container
+            .read(journeyProvider.notifier)
+            .complete('s1-d${d.toString().padLeft(2, '0')}');
       }
       await tester.pumpWidget(app.widget);
       await tester.pumpAndSettle();
@@ -419,7 +421,9 @@ void main() {
       await tester.tap(byKey('completion-season'));
       await tester.pumpAndSettle();
       expect(byKey('season-complete-title'), findsOneWidget);
-      expect(find.textContaining('준비 중'), findsWidgets);
+      // Every day is available: nothing is announced as still in preparation.
+      expect(find.textContaining('준비 중'), findsNothing);
+      expect(find.textContaining('다시 읽어 보셔도 좋습니다'), findsOneWidget);
     });
   });
 

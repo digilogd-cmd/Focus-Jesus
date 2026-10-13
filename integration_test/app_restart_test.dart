@@ -43,6 +43,6 @@ void main() {
           find.byKey(const ValueKey('today-done')).evaluate().isNotEmpty,
       isTrue,
     );
-    expect(find.text('7개의 이야기 중 2개를 읽었습니다.'), findsOneWidget);
+    expect(find.text('30개의 이야기 중 2개를 읽었습니다.'), findsOneWidget);
   });
 }

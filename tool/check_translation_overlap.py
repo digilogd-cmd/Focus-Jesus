@@ -2,8 +2,8 @@
 """Flags manuscript text that reproduces the 개역개정 translation.
 
 For every chapter it fetches the 개역개정 text of each Bible chapter the
-manuscript points to (references and scripture blocks) from 대한성서공회
-성경플랫폼, then looks for runs of N or more consecutive Hangul syllables
+manuscript points to (references, scripture blocks, and passages cited in the
+prose such as "갈라디아서 4:4" or "시편 23편") from 대한성서공회 성경플랫폼, then looks for runs of N or more consecutive Hangul syllables
 (spaces and punctuation ignored) shared by the manuscript and the
 translation. Paraphrase never produces long identical runs; copying does.
 
@@ -32,6 +32,7 @@ import urllib.request
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 SEASON = os.path.join(ROOT, 'assets', 'content', 'season1')
+BOOKS_DART = os.path.join(ROOT, 'lib', 'core', 'bible', 'bible_books.g.dart')
 ALLOWLIST = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                          'translation_overlap_allowlist.txt')
 CACHE = os.environ.get('FJ_NKRV_CACHE',
@@ -61,6 +62,26 @@ def chapters_of(ref):
     return [(book, c) for c in range(c1, c2 + 1)]
 
 
+def load_books():
+    """{korean name: (USFM code, chapter count)} from the app's book table."""
+    with open(BOOKS_DART, encoding='utf-8') as f:
+        src = f.read()
+    books = {}
+    for m in re.finditer(r"code: '(\w+)',\s*koreanName: '([^']+)'.*?verseCounts: <int>\[(.*?)\]",
+                         src, re.S):
+        books[m.group(2)] = (m.group(1), m.group(3).count(',') + (0 if m.group(3).strip().endswith(',') else 1))
+    return books
+
+
+def cited_chapters(text, books, pattern):
+    """Chapters cited in prose: '갈라디아서 4:4', '창세기 12장', '시편 23편'."""
+    for m in pattern.finditer(text):
+        code, count = books[m.group(1)]
+        c = int(m.group(2))
+        if 1 <= c <= count:
+            yield (code, c)
+
+
 def fetch_chapter(book, chapter):
     os.makedirs(CACHE, exist_ok=True)
     path = os.path.join(CACHE, f'{book}.{chapter}.txt')
@@ -69,8 +90,15 @@ def fetch_chapter(book, chapter):
             return f.read()
     url = f'https://bible.bskorea.or.kr/bible/NKRV/{book}.{chapter}'
     req = urllib.request.Request(url, headers={'User-Agent': UA})
-    with urllib.request.urlopen(req, timeout=30) as r:
-        page = r.read().decode('utf-8')
+    for attempt in range(4):
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                page = r.read().decode('utf-8')
+            break
+        except OSError:
+            if attempt == 3:
+                raise
+            time.sleep(2 ** (attempt + 1))  # 2, 4, 8 s
     verses = [html.unescape(TAG.sub('', v)) for v in VERSE.findall(page)]
     text = '\n'.join(v.strip() for v in verses if v.strip())
     if not text:
@@ -136,11 +164,19 @@ def main():
             allow = {NOT_HANGUL.sub('', l) for l in f if not l.startswith('#')}
             allow.discard('')
 
+    books = load_books()
+    # Longest names first so '요한계시록' wins over '요한'.
+    names = sorted(books, key=len, reverse=True)
+    cite = re.compile(r'(' + '|'.join(map(re.escape, names)) + r')\s*(\d+)\s*(?:[:장편])')
+
     failures = 0
     for path in files:
         with open(path, encoding='utf-8') as f:
             chapter = json.load(f)
-        bible_chapters = sorted({c for r in refs_in(chapter) for c in chapters_of(r)})
+        bible_chapters = {c for r in refs_in(chapter) for c in chapters_of(r)}
+        for _, text in strings(chapter):
+            bible_chapters.update(cited_chapters(text, books, cite))
+        bible_chapters = sorted(bible_chapters)
         source = ''.join(NOT_HANGUL.sub('', fetch_chapter(b, c))
                          for b, c in bible_chapters)
         grams = {source[i:i + args.n] for i in range(len(source) - args.n + 1)}

@@ -47,7 +47,10 @@ step "release APK keeps the notification icon"
 # silently fails (this shipped broken in 1.0.0–1.1.0).
 AAPT2="$(ls -d "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/opt/sdk/android-sdk}}"/build-tools/* 2>/dev/null | sort -V | tail -1)/aapt2"
 if [[ -x "$AAPT2" ]]; then
-  if ! "$AAPT2" dump resources "$APK" | grep -q "drawable/ic_stat_notify"; then
+  # Dump first: piping into `grep -q` would SIGPIPE aapt2 and, under
+  # pipefail, report a present icon as missing.
+  RESOURCES="$("$AAPT2" dump resources "$APK")"
+  if ! grep -q "drawable/ic_stat_notify" <<<"$RESOURCES"; then
     echo "drawable/ic_stat_notify missing from $APK" >&2
     exit 1
   fi

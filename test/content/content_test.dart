@@ -20,9 +20,9 @@ void main() {
   final season = loadSeasonFromDisk();
 
   group('content JSON parsing', () {
-    test('all 7 pilot chapters parse in order', () {
+    test('all 30 season chapters parse in order', () {
       expect(season.chapters.map((c) => c.id), [
-        for (var d = 1; d <= 7; d++) 's1-d0$d',
+        for (var d = 1; d <= 30; d++) 's1-d${d.toString().padLeft(2, '0')}',
       ]);
       for (final c in season.chapters) {
         expect(
@@ -72,23 +72,37 @@ void main() {
       );
     });
 
-    test(
-      'curriculum lists 30 days, 7 available, planned days have no file',
-      () {
-        final cur = season.curriculum;
-        expect(cur.days, hasLength(30));
-        expect(cur.availableDays.map((d) => d.day), [1, 2, 3, 4, 5, 6, 7]);
-        for (final d in cur.days.where((d) => !d.isAvailable)) {
-          expect(d.file, isNull, reason: 'day ${d.day}');
-          expect(d.status, CurriculumDayStatus.planned);
-        }
-        expect(
-          season.chapterById('s1-d08'),
-          isNull,
-          reason: 'planned days are not readable',
-        );
-      },
-    );
+    test('curriculum lists 30 days, all available with a manuscript', () {
+      final cur = season.curriculum;
+      expect(cur.days, hasLength(30));
+      expect(cur.availableDays.map((d) => d.day), [
+        for (var d = 1; d <= 30; d++) d,
+      ]);
+      for (final d in cur.days) {
+        expect(d.file, 'day${d.day.toString().padLeft(2, '0')}.json');
+        expect(season.chapterById(d.chapterId)?.title, d.title);
+      }
+      expect(season.isComplete, isTrue);
+    });
+
+    test('a planned day is not readable and may not name a file', () {
+      final json = jsonDecode(
+        File('$seasonDir/curriculum.json').readAsStringSync(),
+      ) as Map<String, Object?>;
+      final last = (json['days'] as List).last as Map<String, Object?>;
+      last['status'] = 'planned';
+      final cur = Curriculum.fromJson(json);
+      expect(cur.availableDays, hasLength(29));
+      // Still naming a file, and its chapter still exists: both reported.
+      final issues = validateCurriculum(cur, season.chapters);
+      expect(
+        issues.map((i) => i.message),
+        containsAll([
+          'planned day must not reference a manuscript file',
+          'chapter exists but is not available in the curriculum',
+        ]),
+      );
+    });
   });
 
   group('editorial validation', () {

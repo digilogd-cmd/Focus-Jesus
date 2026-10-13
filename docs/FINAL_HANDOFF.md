@@ -70,6 +70,16 @@ versionName 1.0.1 / versionCode 2002, 1.0.0과 같은 디버그 키(인증서 SH
 versionName 1.1.0 / versionCode 2003, 같은 디버그 키 → 1.0.x 위에 업데이트 설치되며 데이터 유지.
 같은 커밋의 범용 APK(`scripts/verify.sh`): 66,879,984 bytes, SHA-256 `776cbb0a608dcf0e7b0f842682e7d6a0baadc973ce9dc0d85685b01cd65553fd`.
 
+**1.2.0 (2026-10-13, 시즌 1 전체 30일 + 1·3분 읽기 + 알림 수정)**
+`app-arm64-v8a-release.apk`, 26,699,565 bytes, SHA-256 `12e35404999dc9eff19e78a9e3939b53d5aba966263c6212e165a52b5ea608d8`,
+versionName 1.2.0 / versionCode 2004, 같은 디버그 키 → 이전 버전 위에 업데이트 설치(기록·메모 유지).
+범용 APK(`scripts/verify.sh`): 67,358,839 bytes, SHA-256 `d723806a88ad9d542c49e2e487131e329677f48f67042035708e148ff65aa00e`.
+
+> ⚠️ **알림 결함(1.0.0–1.1.0)**: 알림 아이콘이 릴리스 빌드의 리소스 축소로 삭제되어 알림 초기화와 예약이 **조용히 실패**했습니다
+> (APK 리소스 표에서 `drawable/ic_stat_notify` 0건으로 확인). 1.2.0에서 `res/raw/keep.xml` 로 보존하고, `scripts/verify.sh` 가
+> 아이콘이 빠진 APK를 실패로 처리하며, 실패를 화면에 알리고, 권한 요청·시스템 설정 안내·테스트 알림을 추가했습니다.
+> 실기기에서 실제 알림 수신은 아직 확인하지 못했습니다(설정 > 테스트 알림 보내기로 확인 가능).
+
 ## 5. 자동 테스트 실행 결과
 
 `scripts/verify.sh` 최종 실행: **exit 0** (5분 28초) — 포맷 무변경, `flutter analyze` 무오류, `flutter test` **93개 통과**, 콘텐츠 검증 OK, Release APK 빌드.

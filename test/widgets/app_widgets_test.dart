@@ -126,7 +126,7 @@ void main() {
         expect(find.text('10월 6일 화요일'), findsOneWidget);
         expect(find.text(keepAll('세상은 왜 창조되었을까?')), findsOneWidget);
         expect(find.text('오늘의 이야기 읽기'), findsOneWidget);
-        expect(find.text('7개의 이야기가 준비되어 있습니다.'), findsOneWidget);
+        expect(find.text('30개의 이야기가 준비되어 있습니다.'), findsOneWidget);
         expect(
           find.textContaining('끊어'),
           findsNothing,
@@ -148,7 +148,7 @@ void main() {
         expect(byKey('today-read-more'), findsOneWidget);
         expect(find.text(keepAll('사람들은 왜 바벨탑을 세웠을까?')), findsNothing);
         expect(find.text(keepAll('인간은 왜 하나님을 떠났을까?')), findsOneWidget);
-        expect(find.text('7개의 이야기 중 1개를 읽었습니다.'), findsOneWidget);
+        expect(find.text('30개의 이야기 중 1개를 읽었습니다.'), findsOneWidget);
       },
     );
   });
@@ -240,7 +240,10 @@ void main() {
       await tester.tap(link);
       await tester.pump();
       expect(find.textContaining('본문을 열 수 없습니다'), findsOneWidget);
-      expect(app.links.opened.single.queryParameters['book'], 'gen');
+      expect(
+        app.links.opened.single.toString(),
+        'https://bible.bskorea.or.kr/bible/NKRV/GEN.1.1',
+      );
     });
 
     testWidgets('external link success opens bskorea at the right verse', (
@@ -255,7 +258,7 @@ void main() {
       await tester.pump();
       expect(
         app.links.opened.single.toString(),
-        'https://www.bskorea.or.kr/bible/korbibReadpage.php?version=GAE&book=jhn&chap=1&sec=1',
+        'https://bible.bskorea.or.kr/bible/NKRV/JHN.1.1-JHN.1.5',
       );
       expect(find.textContaining('본문을 열 수 없습니다'), findsNothing);
     });
@@ -397,14 +400,16 @@ void main() {
       expect(find.text('2026년 2월'), findsOneWidget);
     });
 
-    testWidgets('finishing all seven shows the season completion', (
+    testWidgets('finishing all thirty shows the season completion', (
       tester,
     ) async {
       usePhoneSize(tester);
       final app = await TestApp.create(settings: onboarded());
       addTearDown(app.dispose);
-      for (var d = 1; d <= 6; d++) {
-        await app.container.read(journeyProvider.notifier).complete('s1-d0$d');
+      for (var d = 1; d <= 29; d++) {
+        await app.container
+            .read(journeyProvider.notifier)
+            .complete('s1-d${d.toString().padLeft(2, '0')}');
       }
       await tester.pumpWidget(app.widget);
       await tester.pumpAndSettle();
@@ -416,7 +421,9 @@ void main() {
       await tester.tap(byKey('completion-season'));
       await tester.pumpAndSettle();
       expect(byKey('season-complete-title'), findsOneWidget);
-      expect(find.textContaining('준비 중'), findsWidgets);
+      // Every day is available: nothing is announced as still in preparation.
+      expect(find.textContaining('준비 중'), findsNothing);
+      expect(find.textContaining('다시 읽어 보셔도 좋습니다'), findsOneWidget);
     });
   });
 
@@ -496,10 +503,34 @@ void main() {
         await tester.pumpAndSettle();
         await tester.tap(find.byType(Switch));
         await tester.pumpAndSettle();
+        // The OS refused: explain and offer the system settings page.
+        expect(find.text('알림을 허용해 주세요'), findsOneWidget);
+        await tester.tap(byKey('open-notification-settings'));
+        await tester.pumpAndSettle();
+        expect(app.scheduler.settingsOpened, 1);
         expect(app.container.read(settingsProvider).reminder.enabled, isFalse);
-        expect(find.textContaining('알림 권한이 꺼져 있습니다'), findsOneWidget);
       },
     );
+
+    testWidgets('test notification row sends one and confirms', (tester) async {
+      usePhoneSize(tester);
+      final app = await pumpApp(
+        tester,
+        settings: onboarded().copyWith(
+          reminder: const ReminderPreference(
+            enabled: true,
+            hour: 7,
+            minute: 30,
+          ),
+        ),
+      );
+      await tester.tap(byKey('nav-2'));
+      await tester.pumpAndSettle();
+      await tester.tap(byKey('settings-reminder-test'));
+      await tester.pumpAndSettle();
+      expect(app.scheduler.testNotifications, 1);
+      expect(find.textContaining('테스트 알림을 보냈습니다'), findsOneWidget);
+    });
   });
 
   group('layout robustness', () {

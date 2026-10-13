@@ -6,12 +6,13 @@ import '../../core/design/tokens.dart';
 import '../../core/design/widgets.dart';
 import '../../data/models/reading_preferences.dart';
 import '../../data/models/user_settings.dart';
+import 'reminder_access.dart';
 import 'reminder_time_picker.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
-  static const String appVersion = '1.0.0';
+  static const String appVersion = '1.2.0';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -22,20 +23,9 @@ class SettingsScreen extends ConsumerWidget {
     Future<void> updateReminder(ReminderPreference next) async {
       var value = next;
       if (next.enabled && !s.reminder.enabled) {
-        final granted = await ref
-            .read(reminderCoordinatorProvider)
-            .requestPermission();
-        if (!granted) {
+        // Asks the OS; if it can no longer ask, offers the settings page.
+        if (!await allowNotifications(context, ref)) {
           value = next.copyWith(enabled: false);
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  '알림 권한이 꺼져 있습니다. 휴대전화 설정 > 애플리케이션에서 FOCUS JESUS의 알림을 허용해 주세요.',
-                ),
-              ),
-            );
-          }
         }
       }
       await controller.update((cur) => cur.copyWith(reminder: value));
@@ -50,9 +40,9 @@ class SettingsScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: FjSpace.xl),
-                Text('설정', style: t.displayTitle),
+                const FjScreenTitle(en: 'SETTINGS', title: '설정'),
                 const SizedBox(height: FjSpace.xl),
-                const FjLabel('읽기'),
+                const FjDualLabel('READING', '읽기'),
                 FjListRow(
                   key: const ValueKey('settings-level'),
                   title: '이해 수준',
@@ -86,7 +76,7 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: FjSpace.xl),
-                const FjLabel('알림'),
+                const FjDualLabel('REMINDER', '알림'),
                 FjListRow(
                   key: const ValueKey('settings-reminder-toggle'),
                   title: '매일 읽기 알림',
@@ -123,8 +113,31 @@ class SettingsScreen extends ConsumerWidget {
                       }
                     },
                   ),
+                if (s.reminder.enabled)
+                  FjListRow(
+                    key: const ValueKey('settings-reminder-test'),
+                    title: '테스트 알림 보내기',
+                    subtitle: '지금 바로 알림 하나를 보내 도착하는지 확인합니다.',
+                    onTap: () async {
+                      final messenger = ScaffoldMessenger.of(context);
+                      if (!await allowNotifications(context, ref)) return;
+                      final sent = await ref
+                          .read(reminderCoordinatorProvider)
+                          .sendTestNotification();
+                      messenger.showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            sent
+                                ? '테스트 알림을 보냈습니다. 알림 창을 확인해 보세요.'
+                                : '이 기기에서 알림을 보내지 못했습니다.',
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                const ReminderNotice(padding: EdgeInsets.only(top: FjSpace.m)),
                 const SizedBox(height: FjSpace.xl),
-                const FjLabel('화면'),
+                const FjDualLabel('DISPLAY', '화면'),
                 FjListRow(
                   key: const ValueKey('settings-theme'),
                   title: '화면 테마',
@@ -144,7 +157,7 @@ class SettingsScreen extends ConsumerWidget {
                 const SizedBox(height: FjSpace.s),
                 Text('글자 크기는 휴대전화의 글꼴 크기 설정을 따릅니다.', style: t.meta),
                 const SizedBox(height: FjSpace.xl),
-                const FjLabel('이 앱에 대하여'),
+                const FjDualLabel('ABOUT', '이 앱에 대하여'),
                 FjListRow(
                   title: '콘텐츠 안내',
                   onTap: () => _showContentNotice(context),
@@ -222,11 +235,11 @@ class SettingsScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const FjLabel('콘텐츠 안내'),
+                  const FjDualLabel('NOTICE', '콘텐츠 안내'),
                   const SizedBox(height: FjSpace.m),
                   Text(
                     '이 앱의 해설은 성경 본문을 인용하지 않고 독립적으로 쓴 원고입니다. 실제 성경 본문은 '
-                    '대한성서공회 개역개정 웹 페이지로 연결해 드립니다.',
+                    '대한성서공회 성경플랫폼의 개역개정 본문으로 연결해 드립니다.',
                     style: t.body.copyWith(fontSize: 16),
                   ),
                   const SizedBox(height: FjSpace.m),

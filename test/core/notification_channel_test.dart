@@ -15,6 +15,15 @@ void main() {
   const channel = MethodChannel('dexterous.com/flutter/local_notifications');
   final calls = <MethodCall>[];
   bool? permissionAnswer = true;
+  bool? enabledAnswer = true;
+
+  /// A scheduler that initialised like it does on a device.
+  Future<LocalNotificationScheduler> ready() async {
+    final scheduler = LocalNotificationScheduler();
+    await scheduler.initialize(onOpen: () {});
+    calls.clear();
+    return scheduler;
+  }
 
   setUpAll(() {
     tz_data.initializeTimeZones();
@@ -32,6 +41,7 @@ void main() {
             'initialize' => true,
             'getNotificationAppLaunchDetails' => null,
             'requestNotificationsPermission' => permissionAnswer,
+            'areNotificationsEnabled' => enabledAnswer,
             _ => null,
           };
         });
@@ -49,8 +59,11 @@ void main() {
   final dailyFrom = DateTime(now.year, now.month, now.day + 2, 7, 30);
 
   test('enabled plan: cancels old reminders, then schedules inexact one-off and daily repeat', () async {
-    await LocalNotificationScheduler().apply(
-      ReminderPlan.enabled(todayAt: todayAt, dailyFrom: dailyFrom),
+    expect(
+      await (await ready()).apply(
+        ReminderPlan.enabled(todayAt: todayAt, dailyFrom: dailyFrom),
+      ),
+      isTrue,
     );
     expect(calls.map((c) => c.method), [
       'cancel',
@@ -85,7 +98,7 @@ void main() {
   });
 
   test('read today: only the daily repeat is scheduled', () async {
-    await LocalNotificationScheduler().apply(
+    await (await ready()).apply(
       ReminderPlan.enabled(todayAt: null, dailyFrom: dailyFrom),
     );
     expect(calls.map((c) => c.method), ['cancel', 'cancel', 'zonedSchedule']);
@@ -96,7 +109,7 @@ void main() {
   });
 
   test('disabled plan cancels both reminders and schedules nothing', () async {
-    await LocalNotificationScheduler().apply(const ReminderPlan.disabled());
+    await (await ready()).apply(const ReminderPlan.disabled());
     expect(calls.map((c) => c.method), ['cancel', 'cancel']);
     expect(calls.map((c) => (c.arguments as Map)['id']), [
       LocalNotificationScheduler.todayId,
@@ -113,17 +126,93 @@ void main() {
     expect(await LocalNotificationScheduler().requestPermission(), isFalse);
   });
 
-  test('a platform failure while scheduling does not crash the app', () async {
+  test('a platform failure while scheduling is reported, not thrown', () async {
+    final scheduler = await ready();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
           channel,
           (call) async => throw PlatformException(code: 'boom'),
         );
-    await expectLater(
-      LocalNotificationScheduler().apply(
+    expect(
+      await scheduler.apply(
         ReminderPlan.enabled(todayAt: todayAt, dailyFrom: dailyFrom),
       ),
-      completes,
+      isFalse,
     );
+  });
+
+  test(
+    'failed initialisation (e.g. icon stripped from the build) is reported',
+    () async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (call) async {
+            calls.add(call);
+            if (call.method == 'initialize') {
+              throw PlatformException(code: 'invalid_icon');
+            }
+            return null;
+          });
+      final scheduler = LocalNotificationScheduler();
+      await scheduler.initialize(onOpen: () {});
+      calls.clear();
+      expect(
+        await scheduler.apply(
+          ReminderPlan.enabled(todayAt: todayAt, dailyFrom: dailyFrom),
+        ),
+        isFalse,
+      );
+      expect(await scheduler.showTestNotification(), isFalse);
+      expect(
+        calls,
+        isEmpty,
+        reason: 'nothing is sent to an uninitialised plugin',
+      );
+    },
+  );
+
+  test('notification status maps the OS answer; never throws', () async {
+    final scheduler = await ready();
+    enabledAnswer = true;
+    expect(await scheduler.notificationsEnabled(), isTrue);
+    enabledAnswer = false;
+    expect(await scheduler.notificationsEnabled(), isFalse);
+    enabledAnswer = null;
+    expect(await scheduler.notificationsEnabled(), isFalse);
+    enabledAnswer = true;
+  });
+
+  test(
+    'test notification is shown immediately on the reading channel',
+    () async {
+      final scheduler = await ready();
+      expect(await scheduler.showTestNotification(), isTrue);
+      expect(calls.single.method, 'show');
+      final args = calls.single.arguments as Map;
+      expect(args['id'], LocalNotificationScheduler.testId);
+      expect((args['platformSpecifics'] as Map)['channelId'], 'daily_reading');
+    },
+  );
+
+  test('opening the system settings goes through the app channel', () async {
+    final system = <MethodCall>[];
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(LocalNotificationScheduler.systemChannel, (
+          call,
+        ) async {
+          system.add(call);
+          return true;
+        });
+    addTearDown(
+      () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(
+            LocalNotificationScheduler.systemChannel,
+            null,
+          ),
+    );
+    expect(
+      await LocalNotificationScheduler().openNotificationSettings(),
+      isTrue,
+    );
+    expect(system.single.method, 'openNotificationSettings');
   });
 }

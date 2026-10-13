@@ -19,8 +19,15 @@ class ContentIssue {
 const double kMinTimeRatio = 0.7;
 const double kMaxTimeRatio = 1.35;
 
-/// Each longer mode must add at least this much body text.
+/// The 1-minute mode always carries the key message and three reflection
+/// questions (~250 chars on their own), so it gets a wider upper bound.
+const double kMaxTimeRatioOneMinute = 1.6;
+
+/// Each longer tiered mode (5→10→15→20) must add at least this much text.
 const int kMinTierIncrementChars = 1500;
+
+/// 1→3 and 3→5 minutes must each add at least this much text.
+const int kMinBriefIncrementChars = 400;
 
 /// Quoted passages longer than this risk reproducing a copyrighted
 /// translation, so content must paraphrase instead.
@@ -91,9 +98,10 @@ List<ContentIssue> validateChapter(Chapter c) {
     err('learningObjectives', 'at least 2 required');
   }
 
-  // Sections: ids, block content.
+  // Sections (main manuscript and briefs): ids, block content.
   final ids = <String>{};
-  for (final s in c.sections) {
+  final allSections = [...c.sections, for (final b in c.briefs.values) ...b];
+  for (final s in allSections) {
     if (!ids.add(s.id)) err('sections', 'duplicate section id ${s.id}');
     if (!s.blocks.any((b) => b.type == BlockType.paragraph)) {
       err('section ${s.id}', 'needs at least one paragraph');
@@ -123,8 +131,41 @@ List<ContentIssue> validateChapter(Chapter c) {
     err('sections', 'at least one emphasis sentence required');
   }
 
-  // Story arc must hold in every mode.
-  for (final mode in ReadingMinutes.values) {
+  // Brief modes: their own condensed text.
+  final one = c.briefs[ReadingMinutes.one] ?? const <ContentSection>[];
+  final three = c.briefs[ReadingMinutes.three] ?? const <ContentSection>[];
+  if (one.length != 1) {
+    err('briefs.1', 'needs exactly one section (found ${one.length})');
+  }
+  for (final s in one) {
+    if (s.levelNotes.values.any((n) => n.isNotEmpty)) {
+      err('briefs.1', 'the 1-minute brief has no level notes');
+    }
+  }
+  if (three.length < 2 || three.length > 3) {
+    err('briefs.3', 'needs 2–3 sections (found ${three.length})');
+  }
+  for (final required in const [SectionKind.story, SectionKind.christ]) {
+    if (three.isNotEmpty && !three.any((s) => s.kind == required)) {
+      err('briefs.3', 'missing ${required.name} section');
+    }
+  }
+  if (three.isNotEmpty &&
+      !three.any((s) => s.blocks.any((b) => b.type == BlockType.scripture))) {
+    err('briefs.3', 'needs a scripture pointer');
+  }
+  for (final layer in ReadingLevel.values) {
+    final n = three.fold<int>(
+      0,
+      (n, s) => n + (s.levelNotes[layer]?.length ?? 0),
+    );
+    if (three.isNotEmpty && n < 1) {
+      err('briefs.3', '${layer.id} needs at least one note');
+    }
+  }
+
+  // Story arc must hold in every tiered mode.
+  for (final mode in ReadingMinutes.tiers) {
     final included = c.sections.where((s) => mode.includes(s.tier)).toList();
     if (included.isEmpty) {
       err('mode ${mode.label}', 'no sections');
@@ -177,7 +218,9 @@ List<ContentIssue> validateChapter(Chapter c) {
       final composed = composeChapter(c, minutes: mode, level: level);
       final minutes = composed.estimatedMinutes;
       final lo = mode.minutes * kMinTimeRatio;
-      final hi = mode.minutes * kMaxTimeRatio;
+      final hi =
+          mode.minutes *
+          (mode == ReadingMinutes.one ? kMaxTimeRatioOneMinute : kMaxTimeRatio);
       if (minutes < lo || minutes > hi) {
         err(
           'time ${mode.label}/${level.label}',
@@ -185,8 +228,10 @@ List<ContentIssue> validateChapter(Chapter c) {
         );
       }
       final chars = composed.characterCount;
-      if (previousChars >= 0 &&
-          chars - previousChars < kMinTierIncrementChars) {
+      final minIncrement = mode.minutes <= ReadingMinutes.five.minutes
+          ? kMinBriefIncrementChars
+          : kMinTierIncrementChars;
+      if (previousChars >= 0 && chars - previousChars < minIncrement) {
         err(
           'time ${mode.label}/${level.label}',
           'adds only ${chars - previousChars} chars over the shorter mode',
@@ -267,7 +312,7 @@ Iterable<(String, String)> chapterTexts(Chapter c) sync* {
   yield ('subtitle', c.subtitle);
   yield ('summary', c.summary);
   yield ('keyMessage', c.keyMessage);
-  for (final s in c.sections) {
+  for (final s in [...c.sections, for (final b in c.briefs.values) ...b]) {
     yield ('section ${s.id} heading', s.heading);
     for (var i = 0; i < s.blocks.length; i++) {
       yield ('section ${s.id} block $i', s.blocks[i].text);

@@ -18,7 +18,7 @@
 - **오늘**: 날짜, 오늘의 이야기 제목·소개·예상 시간, 단 하나의 주요 행동(`오늘의 이야기 읽기` / `이어서 읽기`), 절제된 진행 문구.
   오늘 읽었으면 "오늘의 이야기를 마쳤습니다" + 조용한 `다음 이야기 읽기 →`(추가 읽기). 놓친 날은 벌점·경고 없이 가장 앞선 미완료 이야기로 이어짐.
 - **읽기**: 세로 스크롤 몰입형. 스크롤하면 숨는 상단 바(뒤로·DAY·읽기 설정), 항상 보이는 2dp 진행선, 어절 단위 줄바꿈,
-  강조 문장·수준별 곁 설명·본문 안내 블록, 오늘의 핵심, 성경 본문 링크(대한성서공회 개역개정, 실패 시 안내), 묵상 질문 3개와 자동 저장 메모,
+  강조 문장·수준별 곁 설명·본문 안내 블록, 오늘의 핵심, 성경 본문 링크(대한성서공회 성경플랫폼 개역개정, 모바일 화면용, 실패 시 안내), 묵상 질문 3개와 자동 저장 메모,
   마지막의 `오늘의 이야기 완료하기`(재독이면 `다시 읽기 마치기` + 처음 읽은 날). 읽던 위치 자동 저장·복원(백그라운드 전환 시 즉시 저장).
   읽는 중에 시간·수준 변경 가능(현재 위치 비율 유지).
 - **완료 화면**: 핵심 문장을 다시 보여 주고 `오늘은 여기까지` / `다음 이야기 읽기`.
@@ -61,6 +61,25 @@ ABI: arm64-v8a, armeabi-v7a, x86_64 (유니버설 APK).
 `app-arm64-v8a-release.apk`, 26,125,178 bytes, SHA-256 `d1dc53cb3a4e075c4486bc429f437772ecf4dcfa571271c9932ed011dc559770`,
 versionCode 2001(ABI 분할 시 Flutter가 자동으로 1000×ABI를 더함), 같은 디버그 키 서명.
 
+**1.0.1 (2026-10-09, 성경 링크를 모바일 플랫폼으로 교체)** — 위 1.0.0 기록은 롤백용으로 그대로 둡니다.
+`app-arm64-v8a-release.apk`, 26,125,178 bytes, SHA-256 `0f260fba721d2f26a46a2683b74e7e7b87932cd05604d35ca61dec8388f1744c`,
+versionName 1.0.1 / versionCode 2002, 1.0.0과 같은 디버그 키(인증서 SHA-256 `540ff875…3ec15677`)로 서명 → 기존 설치 위에 업데이트 설치되며 데이터 유지.
+
+**1.1.0 (2026-10-09, 디자인 v2 "Ink & Paper · Motion Editorial")** — 1.0.x 기록과 APK는 롤백용으로 보존.
+`app-arm64-v8a-release.apk`, 26,319,014 bytes, SHA-256 `7155de00fa6e4c6ed530a27394fd1f4f0ec205a0521ae3a277d575b247ae89ff`,
+versionName 1.1.0 / versionCode 2003, 같은 디버그 키 → 1.0.x 위에 업데이트 설치되며 데이터 유지.
+같은 커밋의 범용 APK(`scripts/verify.sh`): 66,879,984 bytes, SHA-256 `776cbb0a608dcf0e7b0f842682e7d6a0baadc973ce9dc0d85685b01cd65553fd`.
+
+**1.2.0 (2026-10-13, 시즌 1 전체 30일 + 1·3분 읽기 + 알림 수정)**
+`app-arm64-v8a-release.apk`, 26,699,565 bytes, SHA-256 `12e35404999dc9eff19e78a9e3939b53d5aba966263c6212e165a52b5ea608d8`,
+versionName 1.2.0 / versionCode 2004, 같은 디버그 키 → 이전 버전 위에 업데이트 설치(기록·메모 유지).
+범용 APK(`scripts/verify.sh`): 67,358,839 bytes, SHA-256 `d723806a88ad9d542c49e2e487131e329677f48f67042035708e148ff65aa00e`.
+
+> ⚠️ **알림 결함(1.0.0–1.1.0)**: 알림 아이콘이 릴리스 빌드의 리소스 축소로 삭제되어 알림 초기화와 예약이 **조용히 실패**했습니다
+> (APK 리소스 표에서 `drawable/ic_stat_notify` 0건으로 확인). 1.2.0에서 `res/raw/keep.xml` 로 보존하고, `scripts/verify.sh` 가
+> 아이콘이 빠진 APK를 실패로 처리하며, 실패를 화면에 알리고, 권한 요청·시스템 설정 안내·테스트 알림을 추가했습니다.
+> 실기기에서 실제 알림 수신은 아직 확인하지 못했습니다(설정 > 테스트 알림 보내기로 확인 가능).
+
 ## 5. 자동 테스트 실행 결과
 
 `scripts/verify.sh` 최종 실행: **exit 0** (5분 28초) — 포맷 무변경, `flutter analyze` 무오류, `flutter test` **93개 통과**, 콘텐츠 검증 OK, Release APK 빌드.
@@ -96,7 +115,7 @@ versionCode 2001(ABI 분할 시 Flutter가 자동으로 1000×ABI를 더함), �
   3. `flutter test integration_test/app_test.dart -d <기기>` → `flutter test integration_test/app_restart_test.dart -d <기기>`
   4. 수동 확인: 알림 권한 팝업, 알림 수신(설정 시간 1–2분 뒤로), 재부팅 후 알림, 외부 성경 링크, 시스템 글꼴 크게.
 
-## 7. 주요 스크린샷 (`docs/screenshots/`, 실제 폰트 렌더링)
+## 7. 주요 스크린샷 (`docs/screenshots/`, 실제 폰트 렌더링 — v2. 모션 프레임은 `motion/`, 이전 디자인은 `v1/`)
 
 | 파일 | 화면 |
 |---|---|
@@ -137,7 +156,7 @@ versionCode 2001(ABI 분할 시 Flutter가 자동으로 1000×ABI를 더함), �
 3. 정식 업로드 키 생성·보관(Play App Signing), `build.gradle.kts`의 release `signingConfig` 교체, `flutter build appbundle --release`.
 4. 상표·이름: KIPRIS 상표 검색, 앱스토어·도메인 중복 확인, 패키지 ID 확정(출시 후 변경 불가).
 5. Play Console: 개인정보처리방침(수집 데이터 없음 명시), 데이터 보안 양식, 콘텐츠 등급, 스토어 등록정보·스크린샷(`docs/screenshots/` 활용).
-6. 법률 확인: 성경 본문 외부 링크(대한성서공회) 사용 조건, 폰트 라이선스 고지(앱 내 포함됨).
+6. 법률 확인: 성경 본문 외부 링크(대한성서공회 성경플랫폼 — 본문을 앱에 싣지 않고 공식 사이트로 연결만 함) 사용 조건, 폰트 라이선스 고지(앱 내 포함됨).
 7. 버전·빌드 번호 정책, 크래시 수집 도구 도입 여부 결정(현재 없음 — 수집 시 개인정보 고지 필요).
 
 ## 11. 다음 버전 개발 권고
@@ -152,7 +171,8 @@ versionCode 2001(ABI 분할 시 Flutter가 자동으로 1000×ABI를 더함), �
 ## 12. 재현 방법
 
 ```bash
-git checkout claude/fervent-babbage-2sw71k
+git checkout main
 scripts/verify.sh
+dart run tool/check_bible_links.dart   # 성경 링크 실제 확인(인터넷 필요)
 ```
 Phase별 상세 기록: `docs/MASTER_STATE.md`.

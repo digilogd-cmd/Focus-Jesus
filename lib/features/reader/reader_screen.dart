@@ -263,9 +263,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         ChapterHeader(composed: composed),
-                        for (final section in composed.sections)
+                        for (final (i, section) in composed.sections.indexed)
                           SectionView(
                             section: section,
+                            index: i + 1,
                             onOpenReference: _openReference,
                           ),
                         KeyMessageView(chapter: chapter),
@@ -318,6 +319,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                       border: Border(
                         bottom: BorderSide(
                           color: progress > 0 ? c.divider : Colors.transparent,
+                          width: 0.8,
                         ),
                       ),
                     ),
@@ -371,10 +373,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                     alignment: Alignment.centerLeft,
                     child: FractionallySizedBox(
                       widthFactor: value,
-                      child: Container(
-                        height: 2,
-                        color: c.accent.withValues(alpha: 0.7),
-                      ),
+                      child: Container(height: 1.5, color: c.textPrimary),
                     ),
                   ),
                 ),

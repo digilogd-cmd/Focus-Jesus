@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "seasonId": "s1",
   "title": "시즌 1 · 모든 이야기는 그리스도께로",
-  "description": "창조에서 새 창조까지, 30일 동안 성경 전체의 큰 흐름을 예수 그리스도를 중심으로 따라가는 과정입니다. MVP에는 DAY 1–7의 완성 원고가 포함되어 있고, DAY 8–30은 준비 중인 개요입니다.",
+  "description": "창조에서 새 창조까지, 30일 동안 성경 전체의 큰 흐름을 예수 그리스도를 중심으로 따라가는 과정입니다. 30일 모든 원고가 포함되어 있으며, 신학 검수를 기다리고 있습니다.",
   "days": [
     {
       "day": 1,
@@ -148,7 +148,8 @@
         "믿음",
         "의"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day08.json"
     },
     {
       "day": 9,
@@ -165,7 +166,8 @@
         "예비하심",
         "대속"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day09.json"
     },
     {
       "day": 10,
@@ -182,7 +184,8 @@
         "씨름",
         "이름"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day10.json"
     },
     {
       "day": 11,
@@ -199,7 +202,8 @@
         "용서",
         "보존"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day11.json"
     },
     {
       "day": 12,
@@ -215,7 +219,8 @@
         "하나님의 이름",
         "구원"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day12.json"
     },
     {
       "day": 13,
@@ -232,7 +237,8 @@
         "어린양",
         "구원"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day13.json"
     },
     {
       "day": 14,
@@ -248,7 +254,8 @@
         "구원",
         "신뢰"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day14.json"
     },
     {
       "day": 15,
@@ -265,7 +272,8 @@
         "율법",
         "거룩"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day15.json"
     },
     {
       "day": 16,
@@ -282,7 +290,8 @@
         "성막",
         "거하심"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day16.json"
     },
     {
       "day": 17,
@@ -298,7 +307,8 @@
         "불평",
         "바라봄"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day17.json"
     },
     {
       "day": 18,
@@ -315,7 +325,8 @@
         "안식",
         "순종"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day18.json"
     },
     {
       "day": 19,
@@ -331,7 +342,8 @@
         "구원자",
         "왕"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day19.json"
     },
     {
       "day": 20,
@@ -348,7 +360,8 @@
         "기업 무를 자",
         "이방인"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day20.json"
     },
     {
       "day": 21,
@@ -364,7 +377,8 @@
         "왕",
         "마음"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day21.json"
     },
     {
       "day": 22,
@@ -381,7 +395,8 @@
         "왕국",
         "메시아"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day22.json"
     },
     {
       "day": 23,
@@ -397,7 +412,8 @@
         "기도",
         "임재"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day23.json"
     },
     {
       "day": 24,
@@ -413,7 +429,8 @@
         "선지자",
         "돌이킴"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day24.json"
     },
     {
       "day": 25,
@@ -430,7 +447,8 @@
         "새 언약",
         "소망"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day25.json"
     },
     {
       "day": 26,
@@ -446,7 +464,8 @@
         "대속",
         "치유"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day26.json"
     },
     {
       "day": 27,
@@ -462,7 +481,8 @@
         "말씀",
         "기다림"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day27.json"
     },
     {
       "day": 28,
@@ -478,7 +498,8 @@
         "임마누엘",
         "약속의 성취"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day28.json"
     },
     {
       "day": 29,
@@ -495,7 +516,8 @@
         "부활",
         "구속"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day29.json"
     },
     {
       "day": 30,
@@ -511,7 +533,8 @@
         "회복",
         "소망"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day30.json"
     }
   ]
 }

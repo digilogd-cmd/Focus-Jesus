@@ -74,6 +74,12 @@ Future<void> loadAppFonts() async {
     'Pretendard-Medium.otf',
     'Pretendard-SemiBold.otf',
   ]);
+  await load('CormorantGaramond', [
+    'CormorantGaramond-Regular.ttf',
+    'CormorantGaramond-Medium.ttf',
+    'CormorantGaramond-SemiBold.ttf',
+    'CormorantGaramond-Italic.ttf',
+  ]);
   // Material icons for back/chevron glyphs.
   final iconFont = File(
     '${Platform.environment['FLUTTER_ROOT'] ?? '/opt/sdk/flutter'}/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',
@@ -176,4 +182,20 @@ void usePhoneSize(
   tester.view.physicalSize = Size(width * dpr, height * dpr);
   tester.view.devicePixelRatio = dpr;
   addTearDown(tester.view.reset);
+}
+
+/// Drives the lifecycle through background → foreground, like a user
+/// switching away and coming back.
+Future<void> resumeApp(WidgetTester tester) async {
+  for (final state in [
+    AppLifecycleState.inactive,
+    AppLifecycleState.hidden,
+    AppLifecycleState.paused,
+    AppLifecycleState.hidden,
+    AppLifecycleState.inactive,
+    AppLifecycleState.resumed,
+  ]) {
+    tester.binding.handleAppLifecycleStateChanged(state);
+  }
+  await tester.pumpAndSettle();
 }

@@ -26,6 +26,9 @@ class Season {
   /// Number of outline days whose manuscripts are still in preparation.
   int get plannedDayCount =>
       curriculum.days.where((d) => !d.isAvailable).length;
+
+  /// Every day of the outline has a readable manuscript.
+  bool get isComplete => plannedDayCount == 0;
 }
 
 /// Loads bundled, versioned JSON content. Works fully offline.

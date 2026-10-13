@@ -208,7 +208,7 @@ void main() {
         await container.read(reflectionRepositoryProvider).loadNotes('s1-d01'),
         {0: '세상은 우연이 아니라 뜻으로 지어졌다'},
       );
-      expect(find.text('7개의 이야기 중 2개를 읽었습니다.'), findsOneWidget);
+      expect(find.text('30개의 이야기 중 2개를 읽었습니다.'), findsOneWidget);
       await terminate(tester, container);
     },
   );

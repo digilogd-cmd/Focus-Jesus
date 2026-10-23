@@ -188,7 +188,7 @@ void main() {
       await tapVisible(tester, byKey('nav-0'));
       expect(byKey('today-done'), findsOneWidget);
       await tapVisible(tester, byKey('today-read-more'));
-      expect(find.text('DAY 02'), findsWidgets);
+      expect(find.text('DAY 002'), findsWidgets);
       await scrollTo(tester, byKey('reader-complete'));
       await tapVisible(tester, byKey('reader-complete'));
       await tapVisible(tester, byKey('completion-home'));
@@ -208,7 +208,10 @@ void main() {
         await container.read(reflectionRepositoryProvider).loadNotes('s1-d01'),
         {0: '세상은 우연이 아니라 뜻으로 지어졌다'},
       );
-      expect(find.text('30개의 이야기 중 2개를 읽었습니다.'), findsOneWidget);
+      expect(
+        find.text('SEASON 01 30일 중 2일 · 1년 365일 중 2일을 읽었습니다.'),
+        findsOneWidget,
+      );
       await terminate(tester, container);
     },
   );

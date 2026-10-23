@@ -1,8 +1,14 @@
 // Validates chapter JSON files and prints reading-time statistics.
 //
 // Usage:
-//   dart run tool/validate_content.dart                 # whole season 1
-//   dart run tool/validate_content.dart path/day03.json # specific files
+//   dart run tool/validate_content.dart                       # the whole year
+//   dart run tool/validate_content.dart path/s2/day03.json    # specific files
+//
+// With no arguments every season in assets/content/program.json is checked:
+// each manuscript on disk, duplicates across the whole year, each season's
+// curriculum against its manuscripts, and the program itself. Manuscripts
+// written for days still marked "planned" are validated but reported as
+// pending, not as errors.
 //
 // Exits with code 1 when any issue is found.
 
@@ -13,58 +19,104 @@ import 'package:focus_jesus/data/content/chapter.dart';
 import 'package:focus_jesus/data/content/chapter_composer.dart';
 import 'package:focus_jesus/data/content/content_validator.dart';
 import 'package:focus_jesus/data/content/curriculum.dart';
+import 'package:focus_jesus/data/content/program.dart';
 import 'package:focus_jesus/data/models/reading_preferences.dart';
 
-const String seasonDir = 'assets/content/season1';
+const String contentDir = 'assets/content';
 
 void main(List<String> args) {
-  final files = args.isNotEmpty
-      ? args
-      : (Directory(seasonDir)
-            .listSync()
-            .whereType<File>()
-            .map((f) => f.path)
-            .where((p) => RegExp(r'day\d\d\.json$').hasMatch(p))
-            .toList()
-          ..sort());
-
   final issues = <ContentIssue>[];
-  final chapters = <Chapter>[];
-  for (final path in files) {
-    try {
-      final json =
-          jsonDecode(File(path).readAsStringSync()) as Map<String, Object?>;
-      final chapter = Chapter.fromJson(json, path: path);
-      chapters.add(chapter);
-      issues.addAll(validateChapter(chapter));
-      _printStats(chapter);
-    } on Object catch (e) {
-      issues.add(ContentIssue(path, 'failed to load: $e'));
+  if (args.isNotEmpty) {
+    for (final path in args) {
+      final c = _load(path, issues);
+      if (c != null) issues.addAll(validateChapter(c));
     }
+    _finish(issues, args.length);
+    return;
   }
-  if (args.isEmpty) {
-    issues.addAll(validateSeason(chapters));
-    final curriculumFile = File('$seasonDir/curriculum.json');
-    if (curriculumFile.existsSync()) {
+
+  final program = Program.fromJson(
+    jsonDecode(File('$contentDir/program.json').readAsStringSync())
+        as Map<String, Object?>,
+    curriculumFor: (path) {
+      final f = File('$contentDir/$path/curriculum.json');
+      if (!f.existsSync()) return null;
       try {
-        final curriculum = Curriculum.fromJson(
-          jsonDecode(curriculumFile.readAsStringSync()) as Map<String, Object?>,
-        );
-        issues.addAll(validateCurriculum(curriculum, chapters));
-        stdout.writeln(
-          'curriculum: ${curriculum.days.length} days, '
-          '${curriculum.days.where((d) => d.isAvailable).length} available',
+        return Curriculum.fromJson(
+          jsonDecode(f.readAsStringSync()) as Map<String, Object?>,
         );
       } on Object catch (e) {
-        issues.add(ContentIssue(curriculumFile.path, 'failed to load: $e'));
+        issues.add(ContentIssue(f.path, 'failed to load: $e'));
+        return null;
       }
-    } else {
-      issues.add(const ContentIssue('$seasonDir/curriculum.json', 'missing'));
-    }
-  }
+    },
+  );
+  issues.addAll(validateProgram(program));
 
+  final all = <Chapter>[];
+  var pending = 0;
+  for (final season in program.seasons) {
+    final dir = Directory('$contentDir/${season.path}');
+    final files = dir.existsSync()
+        ? (dir
+              .listSync()
+              .whereType<File>()
+              .map((f) => f.path)
+              .where((p) => RegExp(r'day\d\d\.json$').hasMatch(p))
+              .toList()
+            ..sort())
+        : <String>[];
+    final available = <Chapter>[];
+    for (final path in files) {
+      final c = _load(path, issues);
+      if (c == null) continue;
+      issues.addAll(validateChapter(c));
+      if (c.seasonId != season.id) {
+        issues.add(ContentIssue(path, 'seasonId must be ${season.id}'));
+      }
+      all.add(c);
+      if (program.day(c.id)?.isAvailable ?? false) {
+        available.add(c);
+      } else {
+        pending++;
+      }
+    }
+    final curriculum = season.curriculum;
+    if (curriculum != null) {
+      issues.addAll(validateCurriculum(curriculum, available));
+    } else {
+      issues.add(ContentIssue(season.label, 'no curriculum.json yet'));
+    }
+    stdout.writeln(
+      '${season.label} ${season.title}: ${files.length} manuscript(s), '
+      '${program.daysOf(season).where((d) => d.isAvailable).length}/${season.dayCount} available',
+    );
+  }
+  // Duplicates anywhere in the year, not only inside one season.
+  issues.addAll(validateSeason(all, checkOrder: false));
+  stdout.writeln(
+    'year: ${program.totalDays} days, ${program.availableDays.length} available, '
+    '$pending written but not yet available',
+  );
+  _finish(issues, all.length);
+}
+
+Chapter? _load(String path, List<ContentIssue> issues) {
+  try {
+    final json =
+        jsonDecode(File(path).readAsStringSync()) as Map<String, Object?>;
+    final chapter = Chapter.fromJson(json, path: path);
+    _printStats(chapter);
+    return chapter;
+  } on Object catch (e) {
+    issues.add(ContentIssue(path, 'failed to load: $e'));
+    return null;
+  }
+}
+
+void _finish(List<ContentIssue> issues, int count) {
   if (issues.isEmpty) {
-    stdout.writeln('\nOK: ${chapters.length} chapter(s), no issues.');
+    stdout.writeln('\nOK: $count chapter(s), no issues.');
     return;
   }
   stderr.writeln('\n${issues.length} issue(s):');

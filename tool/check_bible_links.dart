@@ -13,7 +13,7 @@ import 'dart:io';
 
 import 'package:focus_jesus/core/bible/bible_reference.dart';
 
-const String seasonDir = 'assets/content/season1';
+const String contentDir = 'assets/content';
 
 // The platform blocks requests that do not look like a browser.
 const String _userAgent =
@@ -28,9 +28,10 @@ const Map<String, String> _platformNames = {
 };
 
 Future<void> main(List<String> args) async {
-  final dir = Directory(args.isNotEmpty ? args.first : seasonDir);
+  final dir = Directory(args.isNotEmpty ? args.first : contentDir);
   final refs = <String>{};
-  for (final file in dir.listSync().whereType<File>()) {
+  // Manuscripts and outlines of every season (or of the folder given).
+  for (final file in dir.listSync(recursive: true).whereType<File>()) {
     if (!file.path.endsWith('.json')) continue;
     _collectRefs(jsonDecode(file.readAsStringSync()), refs);
   }

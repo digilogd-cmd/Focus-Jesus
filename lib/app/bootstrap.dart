@@ -16,6 +16,8 @@ import '../core/storage/app_database.dart';
 import '../core/time/clock.dart';
 import '../core/time/time_zone_service.dart';
 import '../data/content/content_repository.dart';
+import '../data/content/program.dart';
+import '../data/journey/journey.dart';
 import 'providers.dart';
 import 'router.dart';
 
@@ -24,7 +26,8 @@ class AppDependencies {
   AppDependencies({
     required this.database,
     required this.preferences,
-    required this.season,
+    required this.program,
+    required this.chapters,
     required this.scheduler,
     this.timeZoneName,
     this.clock = const SystemClock(),
@@ -35,7 +38,8 @@ class AppDependencies {
 
   final Database database;
   final SharedPreferences preferences;
-  final Season season;
+  final Program program;
+  final ChapterStore chapters;
   final ReminderScheduler scheduler;
   final String? timeZoneName;
   final Clock clock;
@@ -68,10 +72,11 @@ Future<AppDependencies> loadAppDependencies() async {
   await initializeDateFormatting('ko_KR');
   final timeZones = TimeZoneService();
   final timeZone = await timeZones.configureLocal();
+  final content = ContentRepository(rootBundle);
   final results = await Future.wait<Object>([
     openAppDatabase(),
     SharedPreferences.getInstance(),
-    ContentRepository(rootBundle).loadSeason(),
+    content.loadProgram(),
   ]);
   final scheduler = (!kIsWeb && (Platform.isAndroid || Platform.isIOS))
       ? LocalNotificationScheduler()
@@ -84,7 +89,8 @@ Future<AppDependencies> loadAppDependencies() async {
   return AppDependencies(
     database: results[0] as Database,
     preferences: results[1] as SharedPreferences,
-    season: results[2] as Season,
+    program: results[2] as Program,
+    chapters: content.chapterStore(results[2] as Program),
     scheduler: scheduler,
     timeZoneName: timeZone,
     timeZoneRefresher: timeZones.configureLocal,
@@ -101,7 +107,8 @@ Future<ProviderContainer> createAppContainer(AppDependencies deps) async {
     overrides: [
       databaseProvider.overrideWithValue(deps.database),
       sharedPreferencesProvider.overrideWithValue(deps.preferences),
-      seasonProvider.overrideWithValue(deps.season),
+      programProvider.overrideWithValue(deps.program),
+      chapterStoreProvider.overrideWithValue(deps.chapters),
       reminderSchedulerProvider.overrideWithValue(deps.scheduler),
       initialTimeZoneProvider.overrideWithValue(deps.timeZoneName),
       if (deps.timeZoneRefresher != null)
@@ -119,5 +126,14 @@ Future<ProviderContainer> createAppContainer(AppDependencies deps) async {
   // Re-plan reminders on every launch: covers app updates, reboots handled by
   // the OS receiver, time-zone changes and days that passed while closed.
   await container.read(reminderCoordinatorProvider).sync();
+  // The home screen opens on the next story: have it parsed before the first
+  // frame so the title never pops in. Computed from the history directly:
+  // reading todayPlanProvider here would pin "today" before the app runs.
+  final journey = await container.read(journeyProvider.future);
+  final next = nextChapterId(
+    container.read(programProvider).orderedIds,
+    journey.completedChapterIds,
+  );
+  if (next != null) await container.read(chapterProvider(next).future);
   return container;
 }

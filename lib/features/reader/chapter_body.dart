@@ -12,9 +12,16 @@ import '../../core/design/korean_text.dart';
 
 /// Title block at the top of a chapter.
 class ChapterHeader extends StatelessWidget {
-  const ChapterHeader({super.key, required this.composed});
+  const ChapterHeader({
+    super.key,
+    required this.composed,
+    required this.dayNumber,
+  });
 
   final ComposedChapter composed;
+
+  /// Position in the one-year program (1–365).
+  final int dayNumber;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +37,7 @@ class ChapterHeader extends StatelessWidget {
       children: [
         const Reveal(child: FjDualLabel('STORY', '오늘의 이야기')),
         const SizedBox(height: FjSpace.s),
-        DayNumeral(day: chapter.day, size: 96, delay: step),
+        DayNumeral(day: dayNumber, digits: 3, size: 96, delay: step),
         const SizedBox(height: FjSpace.l),
         InkText(
           keepAll(chapter.title),

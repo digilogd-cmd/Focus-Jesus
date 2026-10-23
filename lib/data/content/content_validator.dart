@@ -269,11 +269,15 @@ List<ContentIssue> validateChapter(Chapter c) {
   return issues;
 }
 
-/// Cross-chapter checks for a season.
-List<ContentIssue> validateSeason(List<Chapter> chapters) {
+/// Cross-chapter checks: ids and repeated text. With [checkOrder] (one
+/// season) the orders must also run 1..n without gaps.
+List<ContentIssue> validateSeason(
+  List<Chapter> chapters, {
+  bool checkOrder = true,
+}) {
   final issues = <ContentIssue>[];
   final orders = chapters.map((c) => c.order).toList()..sort();
-  for (var i = 0; i < orders.length; i++) {
+  for (var i = 0; checkOrder && i < orders.length; i++) {
     if (orders[i] != i + 1) {
       issues.add(
         ContentIssue(

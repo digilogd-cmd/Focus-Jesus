@@ -11,7 +11,7 @@ The translation text is cached outside the repository (it is copyrighted and
 must not be committed): $FJ_NKRV_CACHE or ~/.cache/focus-jesus/nkrv.
 
 Usage:
-  python3 tool/check_translation_overlap.py                  # whole season
+  python3 tool/check_translation_overlap.py                  # every season
   python3 tool/check_translation_overlap.py path/day08.json  # some files
   python3 tool/check_translation_overlap.py --n 10 ...       # stricter
 
@@ -31,7 +31,7 @@ import time
 import urllib.request
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-SEASON = os.path.join(ROOT, 'assets', 'content', 'season1')
+CONTENT = os.path.join(ROOT, 'assets', 'content')
 BOOKS_DART = os.path.join(ROOT, 'lib', 'core', 'bible', 'bible_books.g.dart')
 ALLOWLIST = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                          'translation_overlap_allowlist.txt')
@@ -157,7 +157,7 @@ def main():
     ap.add_argument('--n', type=int, default=12,
                     help='minimum shared run in Hangul syllables (default 12)')
     args = ap.parse_args()
-    files = args.files or sorted(glob.glob(os.path.join(SEASON, 'day[0-9][0-9].json')))
+    files = args.files or sorted(glob.glob(os.path.join(CONTENT, 'season*', 'day[0-9][0-9].json')))
     allow = set()
     if os.path.exists(ALLOWLIST):
         with open(ALLOWLIST, encoding='utf-8') as f:

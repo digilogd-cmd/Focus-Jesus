@@ -23,7 +23,7 @@ void main() {
       await tester.pumpWidget(app.widget);
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('reader-title')), findsOneWidget);
-      expect(find.text('DAY 02'), findsWidgets);
+      expect(find.text('DAY 002'), findsWidgets);
       // Back returns to home rather than closing the app.
       await tester.tap(find.byKey(const ValueKey('reader-back')));
       await tester.pumpAndSettle();
@@ -42,7 +42,7 @@ void main() {
     app.container.read(routerProvider).go(Routes.continueReading);
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('reader-title')), findsOneWidget);
-    expect(find.text('DAY 01'), findsWidgets);
+    expect(find.text('DAY 001'), findsWidgets);
   });
 
   testWidgets(

@@ -54,9 +54,12 @@ void main() {
   });
 
   // Real "now", because the plugin itself validates one-off dates against it.
+  // The wall-clock times are read in Asia/Seoul while `now` is the machine's
+  // zone, so stay two days out: "tomorrow 07:30" built from a UTC evening is
+  // already past in Seoul (this failed depending on the time of day).
   final now = DateTime.now();
-  final todayAt = DateTime(now.year, now.month, now.day + 1, 7, 30);
-  final dailyFrom = DateTime(now.year, now.month, now.day + 2, 7, 30);
+  final todayAt = DateTime(now.year, now.month, now.day + 2, 7, 30);
+  final dailyFrom = DateTime(now.year, now.month, now.day + 3, 7, 30);
 
   test('enabled plan: cancels old reminders, then schedules inexact one-off and daily repeat', () async {
     expect(

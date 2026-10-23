@@ -10,6 +10,7 @@ class DayNumeral extends StatelessWidget {
     super.key,
     required this.day,
     this.of,
+    this.digits = 2,
     this.size = 120,
     this.delay = Duration.zero,
     this.onScreen = false,
@@ -17,6 +18,9 @@ class DayNumeral extends StatelessWidget {
 
   final int day;
   final int? of;
+
+  /// Zero-padding width: 2 inside a season ("05"), 3 for the year ("045").
+  final int digits;
   final double size;
   final Duration delay;
   final bool onScreen;
@@ -44,7 +48,7 @@ class DayNumeral extends StatelessWidget {
               MaskRise(
                 delay: delay,
                 onScreen: onScreen,
-                child: Text('$day'.padLeft(2, '0'), style: numeral),
+                child: Text('$day'.padLeft(digits, '0'), style: numeral),
               ),
               if (of != null) ...[
                 const SizedBox(width: 6),
@@ -53,7 +57,7 @@ class DayNumeral extends StatelessWidget {
                   onScreen: onScreen,
                   offset: 8,
                   child: Text(
-                    '/ ${'$of'.padLeft(2, '0')}',
+                    '/ ${'$of'.padLeft(digits, '0')}',
                     style: t.latinItalic.copyWith(
                       fontSize: size * 0.2,
                       color: c.textSecondary,

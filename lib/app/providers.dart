@@ -6,7 +6,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../core/notifications/reminder_planner.dart';
 import '../core/notifications/reminder_scheduler.dart';
 import '../core/time/clock.dart';
-import '../data/content/content_repository.dart';
+import '../data/content/chapter.dart';
+import '../data/content/program.dart';
 import '../data/journey/journey.dart';
 import '../data/models/progress.dart';
 import '../data/models/user_settings.dart';
@@ -25,8 +26,19 @@ final sharedPreferencesProvider = Provider<SharedPreferences>(
       throw UnimplementedError('sharedPreferencesProvider must be overridden'),
 );
 
-final seasonProvider = Provider<Season>(
-  (ref) => throw UnimplementedError('seasonProvider must be overridden'),
+/// The one-year program: seasons and day outlines (no manuscripts).
+final programProvider = Provider<Program>(
+  (ref) => throw UnimplementedError('programProvider must be overridden'),
+);
+
+/// Loads manuscripts on demand.
+final chapterStoreProvider = Provider<ChapterStore>(
+  (ref) => throw UnimplementedError('chapterStoreProvider must be overridden'),
+);
+
+/// One manuscript, parsed once. Null for days still in preparation.
+final chapterProvider = FutureProvider.family<Chapter?, String>(
+  (ref, chapterId) => ref.watch(chapterStoreProvider).load(chapterId),
 );
 
 final reminderSchedulerProvider = Provider<ReminderScheduler>(
@@ -146,10 +158,10 @@ final todayProvider = Provider<LocalDate>((ref) {
 });
 
 final todayPlanProvider = Provider<TodayPlan>((ref) {
-  final season = ref.watch(seasonProvider);
+  final program = ref.watch(programProvider);
   final journey = ref.watch(journeyProvider).value ?? JourneySnapshot.empty;
   return planToday(
-    orderedIds: season.orderedIds,
+    orderedIds: program.orderedIds,
     journey: journey,
     today: ref.watch(todayProvider),
   );

@@ -215,8 +215,17 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final chapter = ref.watch(seasonProvider).chapterById(widget.chapterId);
-    if (chapter == null) return _MissingChapter(onClose: _close);
+    final day = ref.watch(programProvider).day(widget.chapterId);
+    final loaded = ref.watch(chapterProvider(widget.chapterId));
+    if (day == null ||
+        loaded.hasError ||
+        (loaded.hasValue && loaded.value == null)) {
+      return _MissingChapter(onClose: _close);
+    }
+    final chapter = loaded.value;
+    // Parsing one manuscript takes a moment on first open: a blank page
+    // rather than a spinner, in keeping with the paper look.
+    if (chapter == null) return const Scaffold(body: SizedBox.expand());
 
     final settings = ref.watch(settingsProvider);
     ref.listen<UserSettings>(settingsProvider, (prev, next) {
@@ -262,7 +271,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        ChapterHeader(composed: composed),
+                        ChapterHeader(
+                          composed: composed,
+                          dayNumber: day.number,
+                        ),
                         for (final (i, section) in composed.sections.indexed)
                           SectionView(
                             section: section,
@@ -335,7 +347,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                         onPressed: _close,
                         icon: const Icon(Icons.arrow_back),
                       ),
-                      Expanded(child: Center(child: FjLabel(chapter.dayLabel))),
+                      Expanded(child: Center(child: FjLabel(day.label))),
                       TextButton(
                         key: const ValueKey('reader-settings'),
                         onPressed: () => showReadingSettingsSheet(context),

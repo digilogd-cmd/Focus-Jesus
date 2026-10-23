@@ -65,7 +65,19 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - assets/content/program.json
     - assets/content/season1/
+    - assets/content/season2/
+    - assets/content/season3/
+    - assets/content/season4/
+    - assets/content/season5/
+    - assets/content/season6/
+    - assets/content/season7/
+    - assets/content/season8/
+    - assets/content/season9/
+    - assets/content/season10/
+    - assets/content/season11/
+    - assets/content/season12/
     - assets/licenses/
   fonts:
     - family: NotoSerifKR

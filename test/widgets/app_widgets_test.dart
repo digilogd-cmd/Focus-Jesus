@@ -126,7 +126,12 @@ void main() {
         expect(find.text('10월 6일 화요일'), findsOneWidget);
         expect(find.text(keepAll('세상은 왜 창조되었을까?')), findsOneWidget);
         expect(find.text('오늘의 이야기 읽기'), findsOneWidget);
-        expect(find.text('30개의 이야기가 준비되어 있습니다.'), findsOneWidget);
+        expect(
+          find.text(
+            '1년 365일 가운데 ${loadProgramFromDisk().availableDays.length}일의 이야기가 준비되어 있습니다.',
+          ),
+          findsOneWidget,
+        );
         expect(
           find.textContaining('끊어'),
           findsNothing,
@@ -148,7 +153,10 @@ void main() {
         expect(byKey('today-read-more'), findsOneWidget);
         expect(find.text(keepAll('사람들은 왜 바벨탑을 세웠을까?')), findsNothing);
         expect(find.text(keepAll('인간은 왜 하나님을 떠났을까?')), findsOneWidget);
-        expect(find.text('30개의 이야기 중 1개를 읽었습니다.'), findsOneWidget);
+        expect(
+          find.text('SEASON 01 30일 중 1일 · 1년 365일 중 1일을 읽었습니다.'),
+          findsOneWidget,
+        );
       },
     );
   });
@@ -161,7 +169,7 @@ void main() {
         await pumpApp(tester);
         await openReader(tester);
         expect(byKey('reader-title'), findsOneWidget);
-        expect(find.text('DAY 01'), findsWidgets);
+        expect(find.text('DAY 001'), findsWidgets);
         await scrollReaderTo(tester, byKey('reader-key-message'));
         await scrollReaderTo(tester, byKey('scripture-link-GEN 1:1-2:25'));
         await scrollReaderTo(tester, byKey('reader-complete'));
@@ -190,7 +198,7 @@ void main() {
         settings: onboarded().copyWith(minutes: ReadingMinutes.five),
       );
       await openReader(tester);
-      final chapter = app.container.read(seasonProvider).chapters.first;
+      final chapter = loadChapter(1);
       String meta(ReadingMinutes m) =>
           '약 ${composeChapter(chapter, minutes: m, level: ReadingLevel.beginner).displayMinutes}분 · 입문 · 창세기 1:1–2:25';
       expect(find.text(meta(ReadingMinutes.five)), findsOneWidget);
@@ -374,7 +382,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(byKey('completion-next'));
       await tester.pumpAndSettle();
-      expect(find.text('DAY 02'), findsWidgets);
+      expect(find.text('DAY 002'), findsWidgets);
       await scrollReaderTo(tester, byKey('reader-complete'));
       await tester.tap(byKey('reader-complete'));
       await tester.pumpAndSettle();

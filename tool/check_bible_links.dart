@@ -71,6 +71,11 @@ void _collectRefs(Object? node, Set<String> out) {
     for (final MapEntry(:key, :value) in node.entries) {
       if (key == 'ref' && value is String) {
         out.add(value);
+      } else if (key == 'references' &&
+          value is List &&
+          value.every((r) => r is String)) {
+        // Season outlines list their passages as plain strings.
+        out.addAll(value.cast<String>());
       } else {
         _collectRefs(value, out);
       }

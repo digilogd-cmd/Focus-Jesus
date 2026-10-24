@@ -75,6 +75,12 @@ versionName 1.1.0 / versionCode 2003, 같은 디버그 키 → 1.0.x 위에 업�
 versionName 1.2.0 / versionCode 2004, 같은 디버그 키 → 이전 버전 위에 업데이트 설치(기록·메모 유지).
 범용 APK(`scripts/verify.sh`): 67,358,839 bytes, SHA-256 `d723806a88ad9d542c49e2e487131e329677f48f67042035708e148ff65aa00e`.
 
+**1.3.0 (2026-10-24, 1년 과정 구조 + 시즌 2 ‘약속의 가족’ 31편)**
+`app-arm64-v8a-release.apk` → `release/FOCUS-JESUS-1.3.0-arm64-debugsigned.apk`, 27,148,268 bytes,
+SHA-256 `ae766878de4dd38a344e78addb67ff5c7dc0c89db35ddb275aa432601fa1f116`,
+versionName 1.3.0 / versionCode 2005, 같은 디버그 키(인증서 SHA-256 `540ff875…3ec15677`) → 이전 버전 위에 업데이트 설치(기록·메모 유지).
+범용 APK(`scripts/verify.sh`): 67,823,922 bytes, SHA-256 `4fe230d531d70cad70a039a1cf7266086c29422fe7017d9f15954dba833bc0a5`.
+
 > ⚠️ **알림 결함(1.0.0–1.1.0)**: 알림 아이콘이 릴리스 빌드의 리소스 축소로 삭제되어 알림 초기화와 예약이 **조용히 실패**했습니다
 > (APK 리소스 표에서 `drawable/ic_stat_notify` 0건으로 확인). 1.2.0에서 `res/raw/keep.xml` 로 보존하고, `scripts/verify.sh` 가
 > 아이콘이 빠진 APK를 실패로 처리하며, 실패를 화면에 알리고, 권한 요청·시스템 설정 안내·테스트 알림을 추가했습니다.

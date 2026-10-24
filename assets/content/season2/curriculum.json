@@ -18,7 +18,8 @@
         "나그네 삶",
         "믿음의 여정"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day01.json"
     },
     {
       "day": 2,
@@ -34,7 +35,8 @@
         "실패",
         "하나님의 보호"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day02.json"
     },
     {
       "day": 3,
@@ -50,7 +52,8 @@
         "양보",
         "땅의 약속"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day03.json"
     },
     {
       "day": 4,
@@ -68,7 +71,8 @@
         "축복",
         "십일조"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day04.json"
     },
     {
       "day": 5,
@@ -84,7 +88,8 @@
         "인간의 방법",
         "보시는 하나님"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day05.json"
     },
     {
       "day": 6,
@@ -100,7 +105,8 @@
         "언약의 표징",
         "새 이름"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day06.json"
     },
     {
       "day": 7,
@@ -116,7 +122,8 @@
         "웃음",
         "하나님의 능력"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day07.json"
     },
     {
       "day": 8,
@@ -132,7 +139,8 @@
         "공의",
         "긍휼"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day08.json"
     },
     {
       "day": 9,
@@ -149,7 +157,8 @@
         "구출",
         "뒤돌아봄"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day09.json"
     },
     {
       "day": 10,
@@ -165,7 +174,8 @@
         "약속의 자녀",
         "버려진 자를 돌보심"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day10.json"
     },
     {
       "day": 11,
@@ -182,7 +192,8 @@
         "땅의 약속",
         "나그네"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day11.json"
     },
     {
       "day": 12,
@@ -197,7 +208,8 @@
         "기도",
         "헤세드"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day12.json"
     },
     {
       "day": 13,
@@ -214,7 +226,8 @@
         "선택",
         "가치"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day13.json"
     },
     {
       "day": 14,
@@ -229,7 +242,8 @@
         "평화",
         "르호봇"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day14.json"
     },
     {
       "day": 15,
@@ -245,7 +259,8 @@
         "축복",
         "가족의 상처"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day15.json"
     },
     {
       "day": 16,
@@ -260,7 +275,8 @@
         "속임",
         "연단"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day16.json"
     },
     {
       "day": 17,
@@ -276,7 +292,8 @@
         "보시는 하나님",
         "이스라엘 지파"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day17.json"
     },
     {
       "day": 18,
@@ -291,7 +308,8 @@
         "언약",
         "귀향"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day18.json"
     },
     {
       "day": 19,
@@ -307,7 +325,8 @@
         "화해",
         "하나님의 얼굴"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day19.json"
     },
     {
       "day": 20,
@@ -323,7 +342,8 @@
         "정의와 보복",
         "가족의 죄"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day20.json"
     },
     {
       "day": 21,
@@ -340,7 +360,8 @@
         "약속의 확인",
         "상실"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day21.json"
     },
     {
       "day": 22,
@@ -356,7 +377,8 @@
         "거짓",
         "죄책"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day22.json"
     },
     {
       "day": 23,
@@ -373,7 +395,8 @@
         "의로움",
         "계보"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day23.json"
     },
     {
       "day": 24,
@@ -389,7 +412,8 @@
         "유혹",
         "신실함"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day24.json"
     },
     {
       "day": 25,
@@ -406,7 +430,8 @@
         "섭리",
         "지혜"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day25.json"
     },
     {
       "day": 26,
@@ -421,7 +446,8 @@
         "시험",
         "기억"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day26.json"
     },
     {
       "day": 27,
@@ -438,7 +464,8 @@
         "대신함",
         "책임"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day27.json"
     },
     {
       "day": 28,
@@ -454,7 +481,8 @@
         "섭리",
         "눈물"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day28.json"
     },
     {
       "day": 29,
@@ -471,7 +499,8 @@
         "함께 내려가심",
         "나그네의 축복"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day29.json"
     },
     {
       "day": 30,
@@ -488,7 +517,8 @@
         "유다의 홀",
         "열두 지파"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day30.json"
     },
     {
       "day": 31,
@@ -505,7 +535,8 @@
         "소망",
         "약속의 성취"
       ],
-      "status": "planned"
+      "status": "available",
+      "file": "day31.json"
     }
   ]
 }

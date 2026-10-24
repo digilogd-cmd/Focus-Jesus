@@ -3,7 +3,9 @@
 
 For every chapter it fetches the 개역개정 text of each Bible chapter the
 manuscript points to (references, scripture blocks, and passages cited in the
-prose such as "갈라디아서 4:4" or "시편 23편") from 대한성서공회 성경플랫폼, then looks for runs of N or more consecutive Hangul syllables
+prose such as "갈라디아서 4:4", "(신 22:25)", "시편 23편", or a bare "26:8" /
+"24장", read as the chapter's main book) from 대한성서공회 성경플랫폼, then
+looks for runs of N or more consecutive Hangul syllables
 (spaces and punctuation ignored) shared by the manuscript and the
 translation. Paraphrase never produces long identical runs; copying does.
 
@@ -73,13 +75,57 @@ def load_books():
     return books
 
 
-def cited_chapters(text, books, pattern):
-    """Chapters cited in prose: '갈라디아서 4:4', '창세기 12장', '시편 23편'."""
-    for m in pattern.finditer(text):
-        code, count = books[m.group(1)]
-        c = int(m.group(2))
+# Standard Korean abbreviations, as in "(신 22:25-27)" or "롬 9:8".
+ABBREVIATIONS = {
+    '창': '창세기', '출': '출애굽기', '레': '레위기', '민': '민수기',
+    '신': '신명기', '수': '여호수아', '삿': '사사기', '룻': '룻기',
+    '삼상': '사무엘상', '삼하': '사무엘하', '왕상': '열왕기상',
+    '왕하': '열왕기하', '대상': '역대상', '대하': '역대하', '스': '에스라',
+    '느': '느헤미야', '에': '에스더', '욥': '욥기', '시': '시편',
+    '잠': '잠언', '전': '전도서', '아': '아가', '사': '이사야',
+    '렘': '예레미야', '애': '예레미야애가', '겔': '에스겔', '단': '다니엘',
+    '호': '호세아', '욜': '요엘', '암': '아모스', '옵': '오바댜',
+    '욘': '요나', '미': '미가', '나': '나훔', '합': '하박국', '습': '스바냐',
+    '학': '학개', '슥': '스가랴', '말': '말라기', '마': '마태복음',
+    '막': '마가복음', '눅': '누가복음', '요': '요한복음', '행': '사도행전',
+    '롬': '로마서', '고전': '고린도전서', '고후': '고린도후서',
+    '갈': '갈라디아서', '엡': '에베소서', '빌': '빌립보서', '골': '골로새서',
+    '살전': '데살로니가전서', '살후': '데살로니가후서',
+    '딤전': '디모데전서', '딤후': '디모데후서', '딛': '디도서',
+    '몬': '빌레몬서', '히': '히브리서', '약': '야고보서',
+    '벧전': '베드로전서', '벧후': '베드로후서', '요일': '요한일서',
+    '요이': '요한이서', '요삼': '요한삼서', '유': '유다서',
+    '계': '요한계시록',
+}
+
+
+def citation_patterns(books):
+    """(book citation, bare chapter citation) patterns for prose."""
+    names = list(books) + list(ABBREVIATIONS)
+    # Longest names first so '요한계시록' wins over '요한', '요일' over '요'.
+    names.sort(key=len, reverse=True)
+    cite = re.compile(r'(?<![가-힣])(' + '|'.join(map(re.escape, names)) +
+                      r')\s*(\d+)\s*(?:[:장편])')
+    bare = re.compile(r'(?<![가-힣\d:.])(\d+)\s*(?::\s*\d|장)')
+    return cite, bare
+
+
+def cited_chapters(text, books, patterns, home):
+    """Chapters cited in prose: '갈라디아서 4:4', '(신 22:25)', '시편 23편',
+    and bare '26:8' or '24장', which point into [home], the chapter's main
+    book. Reading too much only compares more text, never less."""
+    cite, bare = patterns
+
+    def chapter(code, count, c):
         if 1 <= c <= count:
             yield (code, c)
+
+    for m in cite.finditer(text):
+        code, count = books[ABBREVIATIONS.get(m.group(1), m.group(1))]
+        yield from chapter(code, count, int(m.group(2)))
+    if home is not None:
+        for m in bare.finditer(cite.sub(' ', text)):
+            yield from chapter(*home, int(m.group(1)))
 
 
 def fetch_chapter(book, chapter):
@@ -165,17 +211,18 @@ def main():
             allow.discard('')
 
     books = load_books()
-    # Longest names first so '요한계시록' wins over '요한'.
-    names = sorted(books, key=len, reverse=True)
-    cite = re.compile(r'(' + '|'.join(map(re.escape, names)) + r')\s*(\d+)\s*(?:[:장편])')
+    patterns = citation_patterns(books)
+    by_code = {code: (code, count) for code, count in books.values()}
 
     failures = 0
     for path in files:
         with open(path, encoding='utf-8') as f:
             chapter = json.load(f)
-        bible_chapters = {c for r in refs_in(chapter) for c in chapters_of(r)}
+        refs = list(refs_in(chapter))
+        bible_chapters = {c for r in refs for c in chapters_of(r)}
+        home = by_code.get(chapters_of(refs[0])[0][0]) if refs else None
         for _, text in strings(chapter):
-            bible_chapters.update(cited_chapters(text, books, cite))
+            bible_chapters.update(cited_chapters(text, books, patterns, home))
         bible_chapters = sorted(bible_chapters)
         source = ''.join(NOT_HANGUL.sub('', fetch_chapter(b, c))
                          for b, c in bible_chapters)

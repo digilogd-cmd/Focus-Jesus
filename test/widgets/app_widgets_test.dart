@@ -429,9 +429,11 @@ void main() {
       await tester.tap(byKey('completion-season'));
       await tester.pumpAndSettle();
       expect(byKey('season-complete-title'), findsOneWidget);
-      // Every day is available: nothing is announced as still in preparation.
+      // Every day is available: nothing is announced as still in preparation,
+      // and the next season, which is readable, is named.
       expect(find.textContaining('준비 중'), findsNothing);
-      expect(find.textContaining('다시 읽어 보셔도 좋습니다'), findsOneWidget);
+      expect(find.textContaining('준비하고 있습니다'), findsNothing);
+      expect(find.textContaining('다음은 SEASON 02'), findsOneWidget);
     });
   });
 

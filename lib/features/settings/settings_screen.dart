@@ -12,7 +12,7 @@ import 'reminder_time_picker.dart';
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
-  static const String appVersion = '1.4.0';
+  static const String appVersion = '1.5.0';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

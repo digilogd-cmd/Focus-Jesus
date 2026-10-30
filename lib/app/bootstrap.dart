@@ -34,6 +34,7 @@ class AppDependencies {
     this.launchedFromReminder = false,
     this.linkOpener,
     this.timeZoneRefresher,
+    this.showIntro = false,
   });
 
   final Database database;
@@ -48,6 +49,9 @@ class AppDependencies {
 
   /// Re-detects the device zone on resume; production uses [TimeZoneService].
   final Future<String?> Function()? timeZoneRefresher;
+
+  /// Play the opening press sequence on launch.
+  final bool showIntro;
 }
 
 bool get _isDesktop =>
@@ -95,6 +99,7 @@ Future<AppDependencies> loadAppDependencies() async {
     timeZoneName: timeZone,
     timeZoneRefresher: timeZones.configureLocal,
     launchedFromReminder: launched,
+    showIntro: true,
   );
 }
 
@@ -114,6 +119,7 @@ Future<ProviderContainer> createAppContainer(AppDependencies deps) async {
       if (deps.timeZoneRefresher != null)
         timeZoneRefresherProvider.overrideWithValue(deps.timeZoneRefresher!),
       clockProvider.overrideWithValue(deps.clock),
+      introEnabledProvider.overrideWithValue(deps.showIntro),
       initialLocationProvider.overrideWithValue(
         deps.launchedFromReminder ? Routes.continueReading : Routes.today,
       ),

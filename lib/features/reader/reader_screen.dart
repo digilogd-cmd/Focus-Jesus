@@ -19,6 +19,7 @@ import '../../data/models/user_settings.dart';
 import '../../data/repositories/progress_repository.dart';
 import '../reflection/reflection_section.dart';
 import 'chapter_body.dart';
+import 'press_header.dart';
 import 'reading_settings_sheet.dart';
 
 class ReaderScreen extends ConsumerStatefulWidget {
@@ -271,9 +272,18 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        ChapterHeader(
-                          composed: composed,
-                          dayNumber: day.number,
+                        // Resuming mid-chapter jumps past the header: draw
+                        // it finished instead of printing it off screen.
+                        MediaQuery(
+                          data: MediaQuery.of(context).copyWith(
+                            disableAnimations:
+                                FjMotion.reduced(context) ||
+                                (_savedPosition?.isMeaningful ?? false),
+                          ),
+                          child: PressChapterHeader(
+                            composed: composed,
+                            dayNumber: day.number,
+                          ),
                         ),
                         for (final (i, section) in composed.sections.indexed)
                           SectionView(

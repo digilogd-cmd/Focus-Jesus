@@ -76,6 +76,10 @@ final timeZoneNameProvider = NotifierProvider<TimeZoneName, String?>(
 
 final clockProvider = Provider<Clock>((ref) => const SystemClock());
 
+/// Whether launch plays the opening press sequence (`PressIntro`).
+/// On for the real app; off by default so tests start on the first screen.
+final introEnabledProvider = Provider<bool>((ref) => false);
+
 final linkOpenerProvider = Provider<LinkOpener>(
   (ref) => const UrlLauncherLinkOpener(),
 );

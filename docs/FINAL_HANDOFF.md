@@ -87,6 +87,12 @@ SHA-256 `c40f881c64d5f9e4ff921552c0a9a47edd29eb237feb68cb76823b846d17dcf2`,
 versionName 1.4.0 / versionCode 2006, 같은 디버그 키(인증서 SHA-256 `540ff875…3ec15677`) → 이전 버전 위에 업데이트 설치(기록·메모 유지).
 범용 APK(`scripts/verify.sh`): 68,193,428 bytes, SHA-256 `9dba2e6fbdf5b0793f4a85a5b317c3f1d13b9a531b6dcc9aff9c64014b07e6cc`.
 
+**1.5.0 (2026-10-30, 말씀을 펴내는 장면 — 시작 화면·읽기 모션)**
+`app-arm64-v8a-release.apk` → `release/FOCUS-JESUS-1.5.0-arm64-debugsigned.apk`, 27,583,310 bytes,
+SHA-256 `c6ae480533595407e8be1cd8b7ca3f1adbdbd2db70577168af3c1377ce73ecb7`,
+versionName 1.5.0 / versionCode 2007, 같은 디버그 키(인증서 SHA-256 `540ff875…3ec15677`) → 이전 버전 위에 업데이트 설치(기록·메모 유지).
+범용 APK(`scripts/verify.sh`): 68,406,420 bytes, SHA-256 `b4ed4595b2823138eb6d449e53ae7f1afd1bbb7b61f223e52f4e110f2aad44c7`.
+
 > ⚠️ **알림 결함(1.0.0–1.1.0)**: 알림 아이콘이 릴리스 빌드의 리소스 축소로 삭제되어 알림 초기화와 예약이 **조용히 실패**했습니다
 > (APK 리소스 표에서 `drawable/ic_stat_notify` 0건으로 확인). 1.2.0에서 `res/raw/keep.xml` 로 보존하고, `scripts/verify.sh` 가
 > 아이콘이 빠진 APK를 실패로 처리하며, 실패를 화면에 알리고, 권한 요청·시스템 설정 안내·테스트 알림을 추가했습니다.

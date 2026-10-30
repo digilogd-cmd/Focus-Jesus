@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/design/press.dart';
 import '../data/models/user_settings.dart';
 import 'providers.dart';
 import 'router.dart';
@@ -75,6 +76,10 @@ class _FocusJesusAppState extends ConsumerState<FocusJesusApp> {
       supportedLocales: const [Locale('ko', 'KR')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       routerConfig: ref.watch(routerProvider),
+      builder: (context, child) => PressIntroGate(
+        enabled: ref.read(introEnabledProvider),
+        child: child ?? const SizedBox.shrink(),
+      ),
     );
   }
 }

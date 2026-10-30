@@ -31,51 +31,61 @@ class _ReadingSettingsSheet extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const FjLabel('읽기 시간'),
+                const FjDualLabel('TIME', '읽기 시간'),
                 const SizedBox(height: FjSpace.s),
-                Row(
-                  children: [
-                    for (final m in ReadingMinutes.values)
-                      Expanded(
-                        child: Semantics(
-                          selected: settings.minutes == m,
-                          button: true,
-                          child: InkWell(
-                            key: ValueKey('sheet-minutes-${m.minutes}'),
-                            onTap: () => controller.update(
-                              (s) => s.copyWith(minutes: m),
-                            ),
-                            child: Container(
-                              height: 52,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                border: Border(
-                                  bottom: BorderSide(
-                                    color: settings.minutes == m
-                                        ? c.accent
-                                        : c.divider,
-                                    width: settings.minutes == m ? 2 : 1,
+                // Six options in two rows of three: wide enough for large
+                // system text without crowding.
+                for (var row = 0; row < ReadingMinutes.values.length; row += 3)
+                  Row(
+                    children: [
+                      for (final m in ReadingMinutes.values.skip(row).take(3))
+                        Expanded(
+                          child: Semantics(
+                            selected: settings.minutes == m,
+                            button: true,
+                            child: InkWell(
+                              key: ValueKey('sheet-minutes-${m.minutes}'),
+                              onTap: () => controller.update(
+                                (s) => s.copyWith(minutes: m),
+                              ),
+                              child: Container(
+                                constraints: const BoxConstraints(
+                                  minHeight: 52,
+                                ),
+                                alignment: Alignment.center,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    bottom: BorderSide(
+                                      color: settings.minutes == m
+                                          ? c.accent
+                                          : c.divider,
+                                      width: settings.minutes == m ? 1.5 : 0.8,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              child: Text(
-                                m.label,
-                                style:
-                                    (settings.minutes == m ? t.uiStrong : t.ui)
-                                        .copyWith(
-                                          color: settings.minutes == m
-                                              ? c.textPrimary
-                                              : c.textSecondary,
-                                        ),
+                                child: Text(
+                                  m.label,
+                                  style:
+                                      (settings.minutes == m
+                                              ? t.uiStrong
+                                              : t.ui)
+                                          .copyWith(
+                                            color: settings.minutes == m
+                                                ? c.textPrimary
+                                                : c.textSecondary,
+                                          ),
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                  ],
-                ),
+                    ],
+                  ),
                 const SizedBox(height: FjSpace.xl),
-                const FjLabel('이해 수준'),
+                const FjDualLabel('LEVEL', '이해 수준'),
                 for (final level in ReadingLevel.values)
                   FjOptionTile(
                     key: ValueKey('sheet-level-${level.id}'),

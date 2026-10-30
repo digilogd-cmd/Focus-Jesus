@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 
@@ -13,8 +14,20 @@ abstract class ReminderScheduler {
   /// Asks for the notification permission (Android 13+). Never throws.
   Future<bool> requestPermission();
 
-  /// Replaces all scheduled reminders with [plan].
-  Future<void> apply(ReminderPlan plan);
+  /// Whether the OS currently lets this app post notifications (permission
+  /// granted and notifications not switched off for the app). Never throws.
+  Future<bool> notificationsEnabled();
+
+  /// Opens the system notification settings page for this app, for when the
+  /// permission can no longer be requested in-app. Returns false on failure.
+  Future<bool> openNotificationSettings();
+
+  /// Posts one notification immediately so the user can confirm delivery.
+  Future<bool> showTestNotification();
+
+  /// Replaces all scheduled reminders with [plan]. Returns false when the
+  /// reminders could not be scheduled (the reason is logged).
+  Future<bool> apply(ReminderPlan plan);
 }
 
 /// Used where scheduled notifications are unsupported (desktop test runs).
@@ -22,20 +35,49 @@ abstract class ReminderScheduler {
 class RecordingReminderScheduler implements ReminderScheduler {
   ReminderPlan? lastPlan;
   int applyCount = 0;
+  int permissionRequests = 0;
+  int settingsOpened = 0;
+  int testNotifications = 0;
+
+  /// What the OS answers when asked for the permission.
   bool permissionGranted;
 
-  RecordingReminderScheduler({this.permissionGranted = true});
+  /// Current OS state. Starts granted only when [permissionGranted].
+  bool enabled;
+
+  RecordingReminderScheduler({this.permissionGranted = true, bool? enabled})
+    : enabled = enabled ?? permissionGranted;
 
   @override
   Future<bool> initialize({required VoidCallback onOpen}) async => false;
 
   @override
-  Future<bool> requestPermission() async => permissionGranted;
+  Future<bool> requestPermission() async {
+    permissionRequests++;
+    if (permissionGranted) enabled = true;
+    return permissionGranted;
+  }
 
   @override
-  Future<void> apply(ReminderPlan plan) async {
+  Future<bool> notificationsEnabled() async => enabled;
+
+  @override
+  Future<bool> openNotificationSettings() async {
+    settingsOpened++;
+    return true;
+  }
+
+  @override
+  Future<bool> showTestNotification() async {
+    testNotifications++;
+    return enabled;
+  }
+
+  @override
+  Future<bool> apply(ReminderPlan plan) async {
     lastPlan = plan;
     applyCount++;
+    return true;
   }
 }
 
@@ -47,7 +89,16 @@ class LocalNotificationScheduler implements ReminderScheduler {
 
   static const int todayId = 1001;
   static const int dailyId = 1002;
+  static const int testId = 1003;
   static const String payload = 'continue';
+
+  /// App-side channel (MainActivity.kt) for things the plugin does not offer.
+  static const MethodChannel systemChannel = MethodChannel(
+    'com.focusjesus.story/system',
+  );
+
+  /// False when initialisation failed; scheduling would then fail too.
+  bool _ready = false;
 
   static const AndroidNotificationDetails _android = AndroidNotificationDetails(
     'daily_reading',
@@ -81,6 +132,7 @@ class LocalNotificationScheduler implements ReminderScheduler {
         ),
         onDidReceiveNotificationResponse: (_) => onOpen(),
       );
+      _ready = true;
       final launch = await _plugin.getNotificationAppLaunchDetails();
       return launch?.didNotificationLaunchApp ?? false;
     } on Object catch (e, s) {
@@ -115,11 +167,71 @@ class LocalNotificationScheduler implements ReminderScheduler {
   }
 
   @override
-  Future<void> apply(ReminderPlan plan) async {
+  Future<bool> notificationsEnabled() async {
+    try {
+      final android = _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
+      if (android != null) {
+        return await android.areNotificationsEnabled() ?? false;
+      }
+      final ios = _plugin
+          .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin
+          >();
+      if (ios != null) {
+        final p = await ios.checkPermissions();
+        return p?.isEnabled ?? false;
+      }
+      return false;
+    } on Object catch (e) {
+      debugPrint('Notification status check failed: $e');
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> openNotificationSettings() async {
+    try {
+      return await systemChannel.invokeMethod<bool>(
+            'openNotificationSettings',
+          ) ??
+          false;
+    } on Object catch (e) {
+      debugPrint('Opening notification settings failed: $e');
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> showTestNotification() async {
+    if (!_ready) return false;
+    try {
+      await _plugin.show(
+        id: testId,
+        title: _title,
+        body: '알림이 잘 도착합니다. 정해 둔 시간에 이렇게 알려 드릴게요.',
+        notificationDetails: _details,
+        payload: payload,
+      );
+      return true;
+    } on Object catch (e, s) {
+      debugPrint('Test notification failed: $e\n$s');
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> apply(ReminderPlan plan) async {
+    if (!_ready) {
+      debugPrint('Reminders not scheduled: notifications failed to initialise');
+      return false;
+    }
     try {
       await _plugin.cancel(id: todayId);
       await _plugin.cancel(id: dailyId);
-      if (!plan.enabled) return;
+      if (!plan.enabled) return true;
       final today = plan.todayAt;
       if (today != null) {
         await _plugin.zonedSchedule(
@@ -142,9 +254,12 @@ class LocalNotificationScheduler implements ReminderScheduler {
         payload: payload,
         matchDateTimeComponents: DateTimeComponents.time,
       );
+      return true;
     } on Object catch (e, s) {
-      // Reminders are a convenience; reading must keep working without them.
+      // Reminders are a convenience; reading must keep working without them,
+      // but the failure is reported so the UI can say so.
       debugPrint('Scheduling reminders failed: $e\n$s');
+      return false;
     }
   }
 

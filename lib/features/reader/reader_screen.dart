@@ -19,6 +19,7 @@ import '../../data/models/user_settings.dart';
 import '../../data/repositories/progress_repository.dart';
 import '../reflection/reflection_section.dart';
 import 'chapter_body.dart';
+import 'press_header.dart';
 import 'reading_settings_sheet.dart';
 
 class ReaderScreen extends ConsumerStatefulWidget {
@@ -215,8 +216,17 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final chapter = ref.watch(seasonProvider).chapterById(widget.chapterId);
-    if (chapter == null) return _MissingChapter(onClose: _close);
+    final day = ref.watch(programProvider).day(widget.chapterId);
+    final loaded = ref.watch(chapterProvider(widget.chapterId));
+    if (day == null ||
+        loaded.hasError ||
+        (loaded.hasValue && loaded.value == null)) {
+      return _MissingChapter(onClose: _close);
+    }
+    final chapter = loaded.value;
+    // Parsing one manuscript takes a moment on first open: a blank page
+    // rather than a spinner, in keeping with the paper look.
+    if (chapter == null) return const Scaffold(body: SizedBox.expand());
 
     final settings = ref.watch(settingsProvider);
     ref.listen<UserSettings>(settingsProvider, (prev, next) {
@@ -262,10 +272,23 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        ChapterHeader(composed: composed),
-                        for (final section in composed.sections)
+                        // Resuming mid-chapter jumps past the header: draw
+                        // it finished instead of printing it off screen.
+                        MediaQuery(
+                          data: MediaQuery.of(context).copyWith(
+                            disableAnimations:
+                                FjMotion.reduced(context) ||
+                                (_savedPosition?.isMeaningful ?? false),
+                          ),
+                          child: PressChapterHeader(
+                            composed: composed,
+                            dayNumber: day.number,
+                          ),
+                        ),
+                        for (final (i, section) in composed.sections.indexed)
                           SectionView(
                             section: section,
+                            index: i + 1,
                             onOpenReference: _openReference,
                           ),
                         KeyMessageView(chapter: chapter),
@@ -318,6 +341,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                       border: Border(
                         bottom: BorderSide(
                           color: progress > 0 ? c.divider : Colors.transparent,
+                          width: 0.8,
                         ),
                       ),
                     ),
@@ -333,7 +357,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                         onPressed: _close,
                         icon: const Icon(Icons.arrow_back),
                       ),
-                      Expanded(child: Center(child: FjLabel(chapter.dayLabel))),
+                      Expanded(child: Center(child: FjLabel(day.label))),
                       TextButton(
                         key: const ValueKey('reader-settings'),
                         onPressed: () => showReadingSettingsSheet(context),
@@ -371,10 +395,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                     alignment: Alignment.centerLeft,
                     child: FractionallySizedBox(
                       widthFactor: value,
-                      child: Container(
-                        height: 2,
-                        color: c.accent.withValues(alpha: 0.7),
-                      ),
+                      child: Container(height: 1.5, color: c.textPrimary),
                     ),
                   ),
                 ),

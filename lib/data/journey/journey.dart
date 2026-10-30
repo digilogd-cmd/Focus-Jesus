@@ -50,8 +50,9 @@ enum TodayStatus {
   /// At least one chapter finished today; more can still be read.
   doneToday,
 
-  /// Every available chapter has been completed.
-  seasonComplete,
+  /// Every readable chapter has been completed. Days still in preparation
+  /// may remain in the year (see Program.isComplete).
+  allRead,
 }
 
 class TodayPlan {
@@ -94,7 +95,7 @@ TodayPlan planToday({
   final finishedToday = journey.chaptersOn(today);
   final TodayStatus status;
   if (next == null) {
-    status = TodayStatus.seasonComplete;
+    status = TodayStatus.allRead;
   } else if (finishedToday.isNotEmpty) {
     status = TodayStatus.doneToday;
   } else {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/design/press.dart';
 import '../data/models/user_settings.dart';
 import 'providers.dart';
 import 'router.dart';
@@ -21,6 +22,19 @@ class _FocusJesusAppState extends ConsumerState<FocusJesusApp> {
   void initState() {
     super.initState();
     _lifecycle = AppLifecycleListener(onResume: _onResume);
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _askForReminderAccess(),
+    );
+  }
+
+  /// Reminders are on but the OS blocks them (never asked, revoked, or the
+  /// app was updated from a build without the permission): ask once per
+  /// launch. The home screen keeps a notice with a way to the settings.
+  Future<void> _askForReminderAccess() async {
+    final settings = ref.read(settingsProvider);
+    if (!settings.onboardingComplete || !settings.reminder.enabled) return;
+    final coordinator = ref.read(reminderCoordinatorProvider);
+    if (await coordinator.ensurePermission()) await coordinator.sync();
   }
 
   /// Returning to the app may cross midnight or a time-zone change: refresh
@@ -34,6 +48,8 @@ class _FocusJesusAppState extends ConsumerState<FocusJesusApp> {
     await timeZone.refresh();
     if (!mounted) return;
     dayTick.bump();
+    // Re-plans and re-reads the OS permission (it may have changed in the
+    // system settings while the app was in the background).
     await reminders.sync();
   }
 
@@ -60,6 +76,10 @@ class _FocusJesusAppState extends ConsumerState<FocusJesusApp> {
       supportedLocales: const [Locale('ko', 'KR')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       routerConfig: ref.watch(routerProvider),
+      builder: (context, child) => PressIntroGate(
+        enabled: ref.read(introEnabledProvider),
+        child: child ?? const SizedBox.shrink(),
+      ),
     );
   }
 }

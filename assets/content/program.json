@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "id": "year1",
+  "title": "FOCUS JESUS 1년 과정",
+  "totalDays": 365,
+  "seasons": [
+    {
+      "number": 1,
+      "id": "s1",
+      "path": "season1",
+      "days": 30,
+      "title": "모든 이야기는 그리스도께로",
+      "scope": "창조에서 새 창조까지, 성경 전체의 큰 흐름"
+    },
+    {
+      "number": 2,
+      "id": "s2",
+      "path": "season2",
+      "days": 31,
+      "title": "약속의 가족",
+      "scope": "창세기 12–50장: 아브라함·이삭·야곱·요셉과 약속"
+    },
+    {
+      "number": 3,
+      "id": "s3",
+      "path": "season3",
+      "days": 30,
+      "title": "구원받은 백성, 거룩한 백성",
+      "scope": "출애굽기·레위기: 구원, 언약, 성막, 제사와 거룩"
+    },
+    {
+      "number": 4,
+      "id": "s4",
+      "path": "season4",
+      "days": 31,
+      "title": "광야에서 약속의 땅으로",
+      "scope": "민수기·신명기·여호수아: 광야의 시험과 땅의 약속"
+    },
+    {
+      "number": 5,
+      "id": "s5",
+      "path": "season5",
+      "days": 30,
+      "title": "왕을 구하는 백성",
+      "scope": "사사기·룻기·사무엘상: 반복되는 실패와 왕의 등장"
+    },
+    {
+      "number": 6,
+      "id": "s6",
+      "path": "season6",
+      "days": 31,
+      "title": "다윗의 집과 나뉜 왕국",
+      "scope": "사무엘하·열왕기·역대기: 다윗 왕조, 분열, 포로까지"
+    },
+    {
+      "number": 7,
+      "id": "s7",
+      "path": "season7",
+      "days": 30,
+      "title": "기도와 지혜",
+      "scope": "시편·욥기·잠언·전도서·아가: 고난과 찬양, 지혜의 길"
+    },
+    {
+      "number": 8,
+      "id": "s8",
+      "path": "season8",
+      "days": 31,
+      "title": "선지자들의 외침과 기다림",
+      "scope": "선지서와 에스더·다니엘, 신구약 중간기"
+    },
+    {
+      "number": 9,
+      "id": "s9",
+      "path": "season9",
+      "days": 30,
+      "title": "오신 왕과 하나님 나라",
+      "scope": "복음서 I: 세례 요한부터 갈릴리 사역까지"
+    },
+    {
+      "number": 10,
+      "id": "s10",
+      "path": "season10",
+      "days": 31,
+      "title": "예루살렘으로, 십자가와 부활",
+      "scope": "복음서 II: 예루살렘 여정, 고난 주간, 부활과 승천"
+    },
+    {
+      "number": 11,
+      "id": "s11",
+      "path": "season11",
+      "days": 30,
+      "title": "땅끝까지 퍼지는 복음",
+      "scope": "사도행전과 바울 서신: 교회의 탄생과 복음의 확장"
+    },
+    {
+      "number": 12,
+      "id": "s12",
+      "path": "season12",
+      "days": 30,
+      "title": "소망과 새 창조",
+      "scope": "히브리서·일반서신·요한계시록: 끝까지 견디는 소망"
+    }
+  ]
+}

@@ -19,7 +19,8 @@ class BibleBook {
   final String koreanName;
   final String englishName;
 
-  /// Book code used by 대한성서공회 (bskorea.or.kr) reading pages.
+  /// Book code used by the older 대한성서공회 desktop reading page
+  /// (`BibleReference.legacyExternalUri`). The mobile platform uses [code].
   final String bskoreaCode;
   final Testament testament;
 

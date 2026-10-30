@@ -6,20 +6,6 @@ import 'package:focus_jesus/data/models/user_settings.dart';
 
 import '../helpers/test_app.dart';
 
-Future<void> resumeApp(WidgetTester tester) async {
-  for (final state in [
-    AppLifecycleState.inactive,
-    AppLifecycleState.hidden,
-    AppLifecycleState.paused,
-    AppLifecycleState.hidden,
-    AppLifecycleState.inactive,
-    AppLifecycleState.resumed,
-  ]) {
-    tester.binding.handleAppLifecycleStateChanged(state);
-  }
-  await tester.pumpAndSettle();
-}
-
 void main() {
   const reminderOn = ReminderPreference(enabled: true, hour: 21, minute: 0);
 
@@ -37,7 +23,7 @@ void main() {
       await tester.pumpWidget(app.widget);
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('reader-title')), findsOneWidget);
-      expect(find.text('DAY 02'), findsWidgets);
+      expect(find.text('DAY 002'), findsWidgets);
       // Back returns to home rather than closing the app.
       await tester.tap(find.byKey(const ValueKey('reader-back')));
       await tester.pumpAndSettle();
@@ -56,7 +42,7 @@ void main() {
     app.container.read(routerProvider).go(Routes.continueReading);
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('reader-title')), findsOneWidget);
-    expect(find.text('DAY 01'), findsWidgets);
+    expect(find.text('DAY 001'), findsWidgets);
   });
 
   testWidgets(

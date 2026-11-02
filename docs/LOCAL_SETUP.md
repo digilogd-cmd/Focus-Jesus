@@ -5,7 +5,7 @@
 
 ## 0. 받은 패키지 풀기
 
-`FOCUS-JESUS-local-<버전>.zip`을 **영문·공백 없는 경로**에 풉니다. 예: `C:\dev\focus-jesus`
+`FOCUS-JESUS-local-<버전>.zip`을 **영문·공백 없는 경로**에 풉니다. 예: `E:\claude\focus-jesus`
 (한글이나 공백이 들어간 경로는 Android 빌드 도구가 실패하는 경우가 있습니다.)
 
 패키지 안에는 다음이 들어 있습니다.
@@ -19,16 +19,30 @@
 > 서명 키 두 파일은 저장소(GitHub)에 올리지 않습니다(`.gitignore`). 다른 사람과 공유하지 마세요.
 > 지금 키는 내부 테스트용 디버그 키입니다. Google Play 출시 때는 정식 업로드 키를 새로 만들어 `key.properties`만 바꾸면 됩니다.
 
+## C:에 이미 풀었다면 — E:\claude로 옮기기
+
+`scripts\windows\move_to_e.bat` 을 더블클릭합니다(따로 받은 경우 두 파일 `move_to_e.bat`, `move_to_e.ps1`을 같은 폴더에 두고 실행).
+
+1. `E:\claude` 를 만들고, C:에서 프로젝트(`C:\dev\focus-jesus`, 다운로드·바탕화면·문서의 `focus-jesus` 등)를 찾아
+   `E:\claude\focus-jesus` 로 복사합니다. 빌드 결과물(`build`, `.dart_tool`)은 다시 만들어지므로 빼고 복사합니다.
+   C:에 폴더가 없고 받은 zip만 있으면 zip을 바로 `E:\claude` 에 풉니다.
+2. `C:\dev\flutter` 에 Flutter를 설치했다면 `E:\claude\flutter` 로 복사하고 사용자 PATH를 새 위치로 바꿉니다.
+3. 복사본의 파일 수와 전체 크기가 C:와 같은지 확인한 뒤, 지울 C: 폴더 목록을 보여 주고 **Y를 입력해야만** 지웁니다.
+   맞지 않으면 C:는 그대로 둡니다. 이미 `E:\claude\focus-jesus` 가 있으면 덮어쓰지 않습니다.
+4. 끝나면 **새 명령 프롬프트**를 열고 `E:\claude\focus-jesus\scripts\windows\setup.bat` 을 실행합니다.
+
+Android Studio와 Android SDK(`%LOCALAPPDATA%\Android\Sdk`)는 옮기지 않습니다. 설치 프로그램이 관리하는 위치라 옮기면 깨질 수 있습니다.
+
 ## 1. Git 설치
 
 https://git-scm.com/download/win 에서 설치(기본 옵션 그대로).
 
 ## 2. Flutter 설치 (3.47.6 stable)
 
-1. https://docs.flutter.dev/get-started/install/windows 에서 Flutter SDK zip을 받아 `C:\dev\flutter`에 풉니다.
+1. https://docs.flutter.dev/get-started/install/windows 에서 Flutter SDK zip을 받아 `E:\claude\flutter`에 풉니다.
    이 프로젝트는 **Flutter 3.47.6 / Dart 3.13.5**에서 검증했습니다. 다른 버전이 설치되어 있으면
-   `C:\dev\flutter` 폴더에서 `git checkout 3.47.6` 으로 맞출 수 있습니다.
-2. 시작 메뉴 → "환경 변수" → 사용자 변수 `Path`에 `C:\dev\flutter\bin` 추가.
+   `E:\claude\flutter` 폴더에서 `git checkout 3.47.6` 으로 맞출 수 있습니다.
+2. 시작 메뉴 → "환경 변수" → 사용자 변수 `Path`에 `E:\claude\flutter\bin` 추가.
 3. 새 명령 프롬프트에서 `flutter --version` 이 나오면 됩니다.
 
 ## 3. Android Studio 설치
@@ -89,5 +103,5 @@ Git·Flutter 확인 → 패키지 내려받기(`flutter pub get`) → 서명 키
 | `flutter` 를 찾을 수 없음 | 2단계의 Path 추가 후 **새** 명령 프롬프트 열기 |
 | `INSTALL_FAILED_UPDATE_INCOMPATIBLE` | 서명 키가 다름 → 4단계의 두 파일 확인 |
 | `Android license status unknown` | `flutter doctor --android-licenses` |
-| 빌드가 경로 오류로 실패 | 프로젝트를 `C:\dev\focus-jesus` 같은 영문·공백 없는 경로로 옮기기 |
+| 빌드가 경로 오류로 실패 | 프로젝트를 `E:\claude\focus-jesus` 같은 영문·공백 없는 경로로 옮기기 |
 | 기기가 안 보임 | USB 디버깅 허용 창 확인, 케이블을 데이터 전송용으로, `flutter devices` 로 확인 |

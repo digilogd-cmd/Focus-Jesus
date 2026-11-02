@@ -50,6 +50,8 @@ docs/                     명세, 상태 기록, 디자인 시스템, 콘텐츠 
 
 ## 빌드와 검증
 
+**Windows PC에서 쓰기:** `docs/LOCAL_SETUP.md`(설치 순서, 서명 키, `scripts\windows\*.bat`).
+
 ```bash
 flutter pub get
 scripts/verify.sh                 # 포맷 → 분석 → 테스트 → 콘텐츠 검증 → Release APK

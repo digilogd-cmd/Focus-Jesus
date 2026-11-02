@@ -110,6 +110,7 @@ class Chapter {
     required this.themes,
     required this.keyMessage,
     required this.sections,
+    this.briefs = const {},
     required this.reflectionQuestions,
   });
 
@@ -129,6 +130,9 @@ class Chapter {
   final List<String> themes;
   final String keyMessage;
   final List<ContentSection> sections;
+
+  /// Condensed text for the brief modes (1 and 3 minutes).
+  final Map<ReadingMinutes, List<ContentSection>> briefs;
   final List<String> reflectionQuestions;
 
   /// DAY number shown to readers (1-based order inside the season).
@@ -152,63 +156,25 @@ class Chapter {
         'unsupported schemaVersion $schemaVersion',
       );
     }
-    final sections = r.list('sections', (item, p) {
-      final s = _Reader(_asMap(item, p), p);
-      final tierValue = s.integer('tier');
-      final tier = ReadingMinutes.values.firstWhere(
-        (m) => m.minutes == tierValue,
-        orElse: () => throw ContentFormatException(
-          '$p.tier',
-          'tier must be 5, 10, 15 or 20',
-        ),
+    final sections = r.list('sections', (item, p) => _parseSection(item, p));
+    final briefs = <ReadingMinutes, List<ContentSection>>{};
+    final briefsJson = r.optionalMap('briefs');
+    for (final entry in briefsJson.entries) {
+      final bp = '$path.briefs.${entry.key}';
+      final mode = ReadingMinutes.briefs.firstWhere(
+        (m) => '${m.minutes}' == entry.key,
+        orElse: () =>
+            throw ContentFormatException(bp, 'brief key must be "1" or "3"'),
       );
-      final notesJson = s.optionalMap('levelNotes');
-      final notes = <ReadingLevel, List<String>>{};
-      for (final entry in notesJson.entries) {
-        final level = ReadingLevel.values.firstWhere(
-          (l) => l.id == entry.key,
-          orElse: () => throw ContentFormatException(
-            '$p.levelNotes',
-            'unknown level "${entry.key}"',
-          ),
-        );
-        final value = entry.value;
-        if (value is! List) {
-          throw ContentFormatException(
-            '$p.levelNotes.${entry.key}',
-            'must be a list',
-          );
-        }
-        notes[level] = [
-          for (var i = 0; i < value.length; i++)
-            _nonEmptyString(value[i], '$p.levelNotes.${entry.key}[$i]'),
-        ];
+      final value = entry.value;
+      if (value is! List || value.isEmpty) {
+        throw ContentFormatException(bp, 'expected a non-empty list');
       }
-      return ContentSection(
-        id: s.string('id'),
-        tier: tier,
-        kind: SectionKind.parse(s.string('kind'), '$p.kind'),
-        heading: s.string('heading'),
-        blocks: s.list('blocks', (b, bp) {
-          final br = _Reader(_asMap(b, bp), bp);
-          final type = BlockType.values.firstWhere(
-            (t) => t.name == br.string('type'),
-            orElse: () =>
-                throw ContentFormatException('$bp.type', 'unknown block type'),
-          );
-          BibleReference? ref;
-          if (type == BlockType.scripture) {
-            ref = _parseRef(br.string('ref'), '$bp.ref');
-          }
-          return ContentBlock(
-            type: type,
-            text: br.string('text'),
-            reference: ref,
-          );
-        }),
-        levelNotes: notes,
-      );
-    });
+      briefs[mode] = [
+        for (var i = 0; i < value.length; i++)
+          _parseSection(value[i], '$bp[$i]', briefMode: mode),
+      ];
+    }
 
     return Chapter(
       schemaVersion: schemaVersion,
@@ -238,9 +204,75 @@ class Chapter {
       themes: r.list('themes', _nonEmptyString),
       keyMessage: r.string('keyMessage'),
       sections: sections,
+      briefs: briefs,
       reflectionQuestions: r.list('reflectionQuestions', _nonEmptyString),
     );
   }
+}
+
+/// Parses one section. Brief sections carry no `tier`: their mode is the key
+/// they are listed under.
+ContentSection _parseSection(
+  Object? item,
+  String p, {
+  ReadingMinutes? briefMode,
+}) {
+  final s = _Reader(_asMap(item, p), p);
+  final ReadingMinutes tier;
+  if (briefMode != null) {
+    tier = briefMode;
+  } else {
+    final tierValue = s.integer('tier');
+    tier = ReadingMinutes.tiers.firstWhere(
+      (m) => m.minutes == tierValue,
+      orElse: () => throw ContentFormatException(
+        '$p.tier',
+        'tier must be 5, 10, 15 or 20',
+      ),
+    );
+  }
+  final notesJson = s.optionalMap('levelNotes');
+  final notes = <ReadingLevel, List<String>>{};
+  for (final entry in notesJson.entries) {
+    final level = ReadingLevel.values.firstWhere(
+      (l) => l.id == entry.key,
+      orElse: () => throw ContentFormatException(
+        '$p.levelNotes',
+        'unknown level "${entry.key}"',
+      ),
+    );
+    final value = entry.value;
+    if (value is! List) {
+      throw ContentFormatException(
+        '$p.levelNotes.${entry.key}',
+        'must be a list',
+      );
+    }
+    notes[level] = [
+      for (var i = 0; i < value.length; i++)
+        _nonEmptyString(value[i], '$p.levelNotes.${entry.key}[$i]'),
+    ];
+  }
+  return ContentSection(
+    id: s.string('id'),
+    tier: tier,
+    kind: SectionKind.parse(s.string('kind'), '$p.kind'),
+    heading: s.string('heading'),
+    blocks: s.list('blocks', (b, bp) {
+      final br = _Reader(_asMap(b, bp), bp);
+      final type = BlockType.values.firstWhere(
+        (t) => t.name == br.string('type'),
+        orElse: () =>
+            throw ContentFormatException('$bp.type', 'unknown block type'),
+      );
+      BibleReference? ref;
+      if (type == BlockType.scripture) {
+        ref = _parseRef(br.string('ref'), '$bp.ref');
+      }
+      return ContentBlock(type: type, text: br.string('text'), reference: ref);
+    }),
+    levelNotes: notes,
+  );
 }
 
 class ExternalLink {

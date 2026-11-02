@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../core/design/motion.dart';
 import '../core/design/tokens.dart';
 
 ThemeData buildTheme(Brightness brightness) {
@@ -14,7 +15,7 @@ ThemeData buildTheme(Brightness brightness) {
     secondary: c.accent,
     onSecondary: c.onAccent,
     error: brightness == Brightness.light
-        ? const Color(0xFF8C3B32)
+        ? const Color(0xFF7A2722)
         : const Color(0xFFE2A79F),
     onError: c.background,
     surface: c.background,
@@ -42,8 +43,8 @@ ThemeData buildTheme(Brightness brightness) {
     fontFamily: FjFonts.sans,
     extensions: [c, t],
     splashFactory: NoSplash.splashFactory,
-    highlightColor: c.divider.withValues(alpha: 0.5),
-    dividerTheme: DividerThemeData(color: c.divider, thickness: 1, space: 1),
+    highlightColor: c.divider.withValues(alpha: 0.6),
+    dividerTheme: DividerThemeData(color: c.divider, thickness: 0.8, space: 1),
     textSelectionTheme: TextSelectionThemeData(
       cursorColor: c.accent,
       selectionColor: c.accent.withValues(alpha: 0.22),
@@ -70,7 +71,7 @@ ThemeData buildTheme(Brightness brightness) {
       backgroundColor: c.textPrimary,
       contentTextStyle: t.meta.copyWith(color: c.background),
       elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
     ),
     bottomSheetTheme: BottomSheetThemeData(
       backgroundColor: c.background,
@@ -78,7 +79,7 @@ ThemeData buildTheme(Brightness brightness) {
       elevation: 0,
       modalElevation: 0,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
       ),
       showDragHandle: true,
       dragHandleColor: c.divider,
@@ -86,7 +87,7 @@ ThemeData buildTheme(Brightness brightness) {
     dialogTheme: DialogThemeData(
       backgroundColor: c.background,
       elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       titleTextStyle: t.heading,
       contentTextStyle: t.ui,
     ),
@@ -106,7 +107,7 @@ ThemeData buildTheme(Brightness brightness) {
         borderSide: BorderSide(color: c.divider),
       ),
       focusedBorder: UnderlineInputBorder(
-        borderSide: BorderSide(color: c.accent, width: 1.4),
+        borderSide: BorderSide(color: c.accent, width: 1.2),
       ),
       contentPadding: const EdgeInsets.symmetric(vertical: 12),
     ),
@@ -115,13 +116,13 @@ ThemeData buildTheme(Brightness brightness) {
       elevation: 0,
       dialBackgroundColor: c.surface,
       hourMinuteColor: c.surface,
-      dayPeriodColor: c.accent.withValues(alpha: 0.15),
+      dayPeriodColor: c.divider,
     ),
     pageTransitionsTheme: const PageTransitionsTheme(
       builders: {
-        TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
+        TargetPlatform.android: FjPageTransitionsBuilder(),
         TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-        TargetPlatform.linux: FadeForwardsPageTransitionsBuilder(),
+        TargetPlatform.linux: FjPageTransitionsBuilder(),
       },
     ),
   );

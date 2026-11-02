@@ -36,5 +36,9 @@ void _registerFontLicenses() {
     yield LicenseEntryWithLineBreaks(const [
       'Pretendard',
     ], await rootBundle.loadString('assets/licenses/Pretendard-OFL.txt'));
+    yield LicenseEntryWithLineBreaks(
+      const ['Cormorant Garamond'],
+      await rootBundle.loadString('assets/licenses/CormorantGaramond-OFL.txt'),
+    );
   });
 }

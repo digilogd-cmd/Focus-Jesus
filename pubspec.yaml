@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+1
+version: 1.5.0+7
 
 environment:
   sdk: ^3.13.5
@@ -65,7 +65,19 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - assets/content/program.json
     - assets/content/season1/
+    - assets/content/season2/
+    - assets/content/season3/
+    - assets/content/season4/
+    - assets/content/season5/
+    - assets/content/season6/
+    - assets/content/season7/
+    - assets/content/season8/
+    - assets/content/season9/
+    - assets/content/season10/
+    - assets/content/season11/
+    - assets/content/season12/
     - assets/licenses/
   fonts:
     - family: NotoSerifKR
@@ -82,3 +94,14 @@ flutter:
           weight: 500
         - asset: assets/fonts/Pretendard-SemiBold.otf
           weight: 600
+    - family: CormorantGaramond
+      fonts:
+        - asset: assets/fonts/CormorantGaramond-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/CormorantGaramond-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/CormorantGaramond-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/CormorantGaramond-Italic.ttf
+          weight: 400
+          style: italic

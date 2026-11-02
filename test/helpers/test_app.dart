@@ -8,11 +8,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_jesus/app/app.dart';
 import 'package:focus_jesus/app/bootstrap.dart';
 import 'package:focus_jesus/app/providers.dart';
+import 'package:focus_jesus/data/content/program.dart';
 import 'package:focus_jesus/core/notifications/reminder_scheduler.dart';
 import 'package:focus_jesus/core/storage/app_database.dart';
 import 'package:focus_jesus/core/time/clock.dart';
 import 'package:focus_jesus/data/content/chapter.dart';
-import 'package:focus_jesus/data/content/content_repository.dart';
 import 'package:focus_jesus/data/content/curriculum.dart';
 import 'package:focus_jesus/data/models/user_settings.dart';
 import 'package:focus_jesus/data/repositories/settings_repository.dart';
@@ -20,26 +20,77 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-const String seasonDir = 'assets/content/season1';
+const String contentDir = 'assets/content';
+const String seasonDir = '$contentDir/season1';
 
-/// Loads the real bundled season straight from disk.
-Season loadSeasonFromDisk() {
-  final curriculum = Curriculum.fromJson(
-    jsonDecode(File('$seasonDir/curriculum.json').readAsStringSync())
-        as Map<String, Object?>,
+/// The real bundled program (all season outlines) straight from disk.
+Program loadProgramFromDisk() {
+  final json = jsonDecode(
+    File('$contentDir/program.json').readAsStringSync(),
+  ) as Map<String, Object?>;
+  return Program.fromJson(
+    json,
+    curriculumFor: (path) {
+      final f = File('$contentDir/$path/curriculum.json');
+      if (!f.existsSync()) return null;
+      return Curriculum.fromJson(
+        jsonDecode(f.readAsStringSync()) as Map<String, Object?>,
+      );
+    },
   );
-  final chapters = [
-    for (final d in curriculum.availableDays)
-      Chapter.fromJson(
-        jsonDecode(File('$seasonDir/${d.file}').readAsStringSync())
-            as Map<String, Object?>,
-        path: d.file!,
-      ),
-  ];
-  return Season(curriculum: curriculum, chapters: chapters);
 }
 
-Chapter loadChapter(int day) => loadSeasonFromDisk().chapters[day - 1];
+/// Reads manuscripts synchronously from disk (completes inside fake async).
+ChapterStore diskChapterStore(Program program) => ChapterStore(
+  program,
+  (path) => Future.value(File(path).readAsStringSync()),
+);
+
+/// Every readable chapter of the year, parsed (for content tests).
+List<Chapter> loadAllChaptersFromDisk([Program? program]) {
+  final p = program ?? loadProgramFromDisk();
+  return [
+    for (final d in p.availableDays)
+      Chapter.fromJson(
+        jsonDecode(File(d.assetPath!).readAsStringSync())
+            as Map<String, Object?>,
+        path: d.assetPath!,
+      ),
+  ];
+}
+
+/// One season as files on disk: its outline and readable chapters.
+class DiskSeason {
+  DiskSeason(this.curriculum, this.chapters);
+
+  final Curriculum curriculum;
+  final List<Chapter> chapters;
+
+  Chapter? chapterById(String id) =>
+      chapters.where((c) => c.id == id).firstOrNull;
+
+  bool get isComplete => curriculum.days.every((d) => d.isAvailable);
+}
+
+DiskSeason loadSeasonFromDisk([int number = 1]) {
+  final program = loadProgramFromDisk();
+  final season = program.seasonByNumber(number)!;
+  return DiskSeason(season.curriculum!, [
+    for (final d in program.daysOf(season))
+      if (d.isAvailable)
+        Chapter.fromJson(
+          jsonDecode(File(d.assetPath!).readAsStringSync())
+              as Map<String, Object?>,
+          path: d.assetPath!,
+        ),
+  ]);
+}
+
+/// Season 1's chapters (DAY 01–30), parsed.
+List<Chapter> loadSeasonOneFromDisk() =>
+    loadAllChaptersFromDisk().where((c) => c.seasonId == 's1').toList();
+
+Chapter loadChapter(int day) => loadSeasonOneFromDisk()[day - 1];
 
 /// A fresh in-memory database with the production schema.
 Future<Database> openTestDatabase() {
@@ -73,6 +124,12 @@ Future<void> loadAppFonts() async {
     'Pretendard-Regular.otf',
     'Pretendard-Medium.otf',
     'Pretendard-SemiBold.otf',
+  ]);
+  await load('CormorantGaramond', [
+    'CormorantGaramond-Regular.ttf',
+    'CormorantGaramond-Medium.ttf',
+    'CormorantGaramond-SemiBold.ttf',
+    'CormorantGaramond-Italic.ttf',
   ]);
   // Material icons for back/chevron glyphs.
   final iconFont = File(
@@ -132,6 +189,7 @@ class TestApp {
     if (settings != null) await SettingsRepository(prefs).save(settings);
     final db = database ?? await openTestDatabase();
     final clock = FixedClock(now ?? DateTime(2026, 10, 6, 8, 0));
+    final program = loadProgramFromDisk();
     final scheduler = RecordingReminderScheduler(
       permissionGranted: permissionGranted,
     );
@@ -140,7 +198,8 @@ class TestApp {
       AppDependencies(
         database: db,
         preferences: prefs,
-        season: loadSeasonFromDisk(),
+        program: program,
+        chapters: diskChapterStore(program),
         scheduler: scheduler,
         timeZoneName: 'Asia/Seoul',
         clock: clock,
@@ -176,4 +235,20 @@ void usePhoneSize(
   tester.view.physicalSize = Size(width * dpr, height * dpr);
   tester.view.devicePixelRatio = dpr;
   addTearDown(tester.view.reset);
+}
+
+/// Drives the lifecycle through background → foreground, like a user
+/// switching away and coming back.
+Future<void> resumeApp(WidgetTester tester) async {
+  for (final state in [
+    AppLifecycleState.inactive,
+    AppLifecycleState.hidden,
+    AppLifecycleState.paused,
+    AppLifecycleState.hidden,
+    AppLifecycleState.inactive,
+    AppLifecycleState.resumed,
+  ]) {
+    tester.binding.handleAppLifecycleStateChanged(state);
+  }
+  await tester.pumpAndSettle();
 }

@@ -19,7 +19,7 @@ abstract final class Routes {
   static const journey = '/journey';
   static const settings = '/settings';
   static const continueReading = '/continue';
-  static const seasonComplete = '/season-complete';
+  static String seasonComplete(int season) => '/season/$season/complete';
 
   static String read(String chapterId) => '/read/$chapterId';
   static String done(String chapterId) => '/read/$chapterId/done';
@@ -61,8 +61,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, _) => const ContinueScreen(),
       ),
       GoRoute(
-        path: Routes.seasonComplete,
-        builder: (_, _) => const SeasonCompleteScreen(),
+        path: '/season/:number/complete',
+        builder: (_, state) => SeasonCompleteScreen(
+          seasonNumber: int.tryParse(state.pathParameters['number']!) ?? 1,
+        ),
       ),
       GoRoute(
         path: '/read/:chapterId',

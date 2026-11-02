@@ -70,22 +70,23 @@ ComposedChapter composeChapter(
   required ReadingLevel level,
 }) {
   final layers = level.noteLayers;
+  final source = minutes.isBrief
+      ? chapter.briefs[minutes] ?? const <ContentSection>[]
+      : chapter.sections.where((s) => minutes.includes(s.tier));
   return ComposedChapter(
     chapter: chapter,
     minutes: minutes,
     level: level,
     sections: [
-      for (final section in chapter.sections)
-        if (minutes.includes(section.tier))
-          ComposedSection(
-            section: section,
-            notes: [
-              for (final layer in layers)
-                for (final text
-                    in section.levelNotes[layer] ?? const <String>[])
-                  ComposedNote(layer: layer, text: text),
-            ],
-          ),
+      for (final section in source)
+        ComposedSection(
+          section: section,
+          notes: [
+            for (final layer in layers)
+              for (final text in section.levelNotes[layer] ?? const <String>[])
+                ComposedNote(layer: layer, text: text),
+          ],
+        ),
     ],
   );
 }

@@ -105,7 +105,7 @@ void main() {
         journey: journey,
         today: const LocalDate(2026, 10, 20),
       );
-      expect(plan.status, TodayStatus.seasonComplete);
+      expect(plan.status, TodayStatus.allRead);
       expect(plan.nextChapterId, isNull);
     });
 

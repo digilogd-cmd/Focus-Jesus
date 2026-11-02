@@ -88,13 +88,17 @@ class MonthCalendar extends StatelessWidget {
                                   width: 30,
                                   height: 30,
                                   alignment: Alignment.center,
-                                  decoration: isSelected
+                                  decoration: isToday
+                                      ? BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: c.textPrimary,
+                                        )
+                                      : isSelected
                                       ? BoxDecoration(
                                           shape: BoxShape.circle,
                                           border: Border.all(
-                                            color: c.textSecondary.withValues(
-                                              alpha: 0.5,
-                                            ),
+                                            color: c.textPrimary,
+                                            width: 0.8,
                                           ),
                                         )
                                       : null,
@@ -105,7 +109,7 @@ class MonthCalendar extends StatelessWidget {
                                           fontSize: 14.5,
                                           height: 1.2,
                                           color: isToday
-                                              ? c.accent
+                                              ? c.background
                                               : c.textPrimary,
                                         ),
                                   ),
@@ -129,7 +133,7 @@ class MonthCalendar extends StatelessWidget {
                                           ),
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
-                                            color: c.accent,
+                                            color: c.textPrimary,
                                           ),
                                         ),
                                     ],

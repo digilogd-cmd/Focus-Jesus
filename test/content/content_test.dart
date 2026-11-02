@@ -20,9 +20,9 @@ void main() {
   final season = loadSeasonFromDisk();
 
   group('content JSON parsing', () {
-    test('all 7 pilot chapters parse in order', () {
+    test('all 30 season chapters parse in order', () {
       expect(season.chapters.map((c) => c.id), [
-        for (var d = 1; d <= 7; d++) 's1-d0$d',
+        for (var d = 1; d <= 30; d++) 's1-d${d.toString().padLeft(2, '0')}',
       ]);
       for (final c in season.chapters) {
         expect(
@@ -72,23 +72,37 @@ void main() {
       );
     });
 
-    test(
-      'curriculum lists 30 days, 7 available, planned days have no file',
-      () {
-        final cur = season.curriculum;
-        expect(cur.days, hasLength(30));
-        expect(cur.availableDays.map((d) => d.day), [1, 2, 3, 4, 5, 6, 7]);
-        for (final d in cur.days.where((d) => !d.isAvailable)) {
-          expect(d.file, isNull, reason: 'day ${d.day}');
-          expect(d.status, CurriculumDayStatus.planned);
-        }
-        expect(
-          season.chapterById('s1-d08'),
-          isNull,
-          reason: 'planned days are not readable',
-        );
-      },
-    );
+    test('curriculum lists 30 days, all available with a manuscript', () {
+      final cur = season.curriculum;
+      expect(cur.days, hasLength(30));
+      expect(cur.availableDays.map((d) => d.day), [
+        for (var d = 1; d <= 30; d++) d,
+      ]);
+      for (final d in cur.days) {
+        expect(d.file, 'day${d.day.toString().padLeft(2, '0')}.json');
+        expect(season.chapterById(d.chapterId)?.title, d.title);
+      }
+      expect(season.isComplete, isTrue);
+    });
+
+    test('a planned day is not readable and may not name a file', () {
+      final json = jsonDecode(
+        File('$seasonDir/curriculum.json').readAsStringSync(),
+      ) as Map<String, Object?>;
+      final last = (json['days'] as List).last as Map<String, Object?>;
+      last['status'] = 'planned';
+      final cur = Curriculum.fromJson(json);
+      expect(cur.availableDays, hasLength(29));
+      // Still naming a file, and its chapter still exists: both reported.
+      final issues = validateCurriculum(cur, season.chapters);
+      expect(
+        issues.map((i) => i.message),
+        containsAll([
+          'planned day must not reference a manuscript file',
+          'chapter exists but is not available in the curriculum',
+        ]),
+      );
+    });
   });
 
   group('editorial validation', () {
@@ -136,12 +150,12 @@ void main() {
   });
 
   group('reading time composition', () {
-    test('longer modes add content and keep the same core in order', () {
+    test('longer tiered modes add content and keep the same core in order', () {
       for (final c in season.chapters) {
         for (final level in ReadingLevel.values) {
           var previous = <String>[];
           var previousChars = 0;
-          for (final m in ReadingMinutes.values) {
+          for (final m in ReadingMinutes.tiers) {
             final composed = composeChapter(c, minutes: m, level: level);
             final ids = composed.sections.map((s) => s.section.id).toList();
             expect(
@@ -160,9 +174,9 @@ void main() {
       }
     });
 
-    test('every mode starts with the opening, ends with today, includes Christ and Scripture', () {
+    test('every tiered mode starts with the opening, ends with today, includes Christ and Scripture', () {
       for (final c in season.chapters) {
-        for (final m in ReadingMinutes.values) {
+        for (final m in ReadingMinutes.tiers) {
           final sections = composeChapter(
             c,
             minutes: m,
@@ -197,7 +211,10 @@ void main() {
               est,
               inInclusiveRange(
                 m.minutes * kMinTimeRatio,
-                m.minutes * kMaxTimeRatio,
+                m.minutes *
+                    (m == ReadingMinutes.one
+                        ? kMaxTimeRatioOneMinute
+                        : kMaxTimeRatio),
               ),
               reason: '${c.id} ${m.label} ${level.label}',
             );
@@ -307,8 +324,21 @@ void main() {
       }
     });
 
-    test('external link points to the first verse on bskorea', () {
-      final uri = BibleReference.parse('GAL 3:6-16').externalUri;
+    test('external link opens the passage on the mobile bible platform', () {
+      String link(String ref) =>
+          BibleReference.parse(ref).externalUri.toString();
+      const base = 'https://bible.bskorea.or.kr/bible/NKRV';
+      expect(link('GAL 3:6-16'), '$base/GAL.3.6-GAL.3.16');
+      expect(link('GAL 3:16'), '$base/GAL.3.16');
+      expect(link('GEN 3'), '$base/GEN.3');
+      expect(link('1JN 3:8'), '$base/1JN.3.8');
+      // Cross-chapter ranges are not supported by the platform: open at the
+      // first verse.
+      expect(link('GEN 6:1-9:17'), '$base/GEN.6.1');
+    });
+
+    test('legacy desktop link is kept for rollback', () {
+      final uri = BibleReference.parse('GAL 3:6-16').legacyExternalUri;
       expect(uri.host, 'www.bskorea.or.kr');
       expect(uri.queryParameters, {
         'version': 'GAE',
